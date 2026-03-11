@@ -1,5 +1,6 @@
 import express from 'express';
-import router from './routes.js';
+import userRoutes from './routes/userRoutes.js';
+import cursoRoutes from './routes/cursoRoutes.js';
 import cors from 'cors';
 
 
@@ -13,8 +14,8 @@ app.use(
 
 );
 
-//Acessa todas as rotas definidas em routes.js
-app.use('/', router);
+//Acessa todas as rotas
+app.use('/', userRoutes, cursoRoutes);
 
 
 // Inicia o servidor
