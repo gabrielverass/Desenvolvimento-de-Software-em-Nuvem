@@ -29,4 +29,18 @@ export const efetuarCadastro = async (req, res) => {
         res.status(500).json({ error: 'Ocorreu um erro ao cadastrar o usuário.' });
     }
     
-}
+};
+
+export const loginUsuario = async (req, res) => {
+    try {
+        const dadosLogin = req.body;
+        // Lógica para autenticar o usuário
+        // Aqui você pode verificar as credenciais do usuário e gerar um token de autenticação, por exemplo.
+        res.json({ message: 'Usuário autenticado com sucesso!' });
+
+
+    } catch (error) {
+        console.error('Erro ao autenticar usuário:', error);
+        res.status(500).json({ error: 'Ocorreu um erro ao autenticar o usuário.' });
+    }
+};

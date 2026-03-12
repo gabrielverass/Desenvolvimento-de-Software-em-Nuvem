@@ -34,6 +34,7 @@ export const buscarUsuarioPorEmail = async (email) => {
         .maybeSingle();
 
     if (error) {
+
         return { error: error.message };
     }
 
@@ -41,16 +42,18 @@ export const buscarUsuarioPorEmail = async (email) => {
 
 }
 
-export const buscarUsuarioPorCpf = async (cpf) => {
+export const buscarUsuarioPorCampo = async (campo, valor) => {
 
     const {data, error} = await supabase
         .from('users')
         .select('*')
-        .eq('cpf', cpf)
+        .eq(campo, valor)
         .maybeSingle();
 
     if (error) {
+
         return { error: error.message };
+
     }
 
     return { data };

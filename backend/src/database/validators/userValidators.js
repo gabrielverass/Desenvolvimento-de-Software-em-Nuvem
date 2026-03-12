@@ -1,11 +1,9 @@
-import {supabase} from '../conn.js';
-import { buscarUsuarioPorCpf, buscarUsuarioPorEmail } from '../functions/userHelpers.js';
-
+import { buscarUsuarioPorCampo} from '../functions/userHelpers.js';
 
 //Verifica se o cpf já existe no db.
 export const cpfCadastrado = async (cpf) => {
 
-    return await buscarUsuarioPorCpf(cpf)
+    return await buscarUsuarioPorCampo("cpf", cpf)
         .then(result => {
             if (result.data) {
                 return true; // CPF já existe
