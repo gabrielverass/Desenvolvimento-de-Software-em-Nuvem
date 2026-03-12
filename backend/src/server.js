@@ -4,6 +4,7 @@ import cursoRoutes from './routes/cursoRoutes.js';
 import cors from 'cors';
 
 
+
 const app = express();
 
 // Adiciona as depenpendencias.
