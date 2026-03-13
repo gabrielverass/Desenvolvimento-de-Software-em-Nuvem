@@ -1,4 +1,4 @@
-import {cadastrarUsuario} from '../service/userServices.js';
+import {cadastrarUsuario, validarUsuario} from '../service/userServices.js';
 
 export const efetuarCadastro = async (req, res) => {
     try {
@@ -34,9 +34,15 @@ export const efetuarCadastro = async (req, res) => {
 export const loginUsuario = async (req, res) => {
     try {
         const dadosLogin = req.body;
-        // Lógica para autenticar o usuário
-        // Aqui você pode verificar as credenciais do usuário e gerar um token de autenticação, por exemplo.
-        res.json({ message: 'Usuário autenticado com sucesso!' });
+
+        // Verifica as credenciais de usuário e retorna o resultado da validação.
+        const resultado = await validarUsuario(dadosLogin);
+
+        //Caso a função retorne um erro, envia o status de erro e a mensagem.
+        if(resultado.error) {return res.status(400).json({ error: resultado.error })};
+
+        //caso a operação seja bem sucedida, retorna o status, o token e a mensagem de sucesso.
+        return res.status(201).json({ message: resultado.message, token: resultado.token });
 
 
     } catch (error) {

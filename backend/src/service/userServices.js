@@ -45,7 +45,7 @@ export const validarUsuario = async (user) => {
         //caso ocorra um erro, retorna o erro.
         if (resultado.error) { return { error: resultado.error }};
         //Caso não encontre um usuário, retorna uma mensagem de erro.
-        if (!resultado.data) {return { error: 'Usuário não encontrado.' };
+        if (!resultado.data) {return { error: 'Usuário não encontrado.' }};
 
         //Caso encontre um usuário, compara a senha fornecida com a senha armazenada no banco de dados.
         const validarSenha = await bcrypt.compare(user.senha, resultado.data.hash);
@@ -57,8 +57,6 @@ export const validarUsuario = async (user) => {
         const token = jwt.sign({ id: resultado.data.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         return { message: 'Usuário autenticado com sucesso!', token };
         
-    }
-
     } catch (error) {
         console.error('Erro ao validar usuário:', error);
         return { error: 'Ocorreu um erro ao validar o usuário.' };
