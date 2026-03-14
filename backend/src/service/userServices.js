@@ -1,5 +1,7 @@
+//Camada de serviços, responsável pela lógica de negócios e comunicação entre controller e a database.
+
 import bcrypt from 'bcryptjs';
-import { inserirUsuario, buscarUsuarioPorCampo } from '../database/functions/userHelpers.js';
+import { inserirUsuario, buscarUsuarioPorCampo, editarUsuario, excluirUsuario, editarSenha } from '../database/functions/userHelpers.js';
 import { cpfCadastrado } from '../database/validators/userValidators.js';
 import jwt from 'jsonwebtoken';
 
@@ -39,7 +41,7 @@ export const cadastrarUsuario = async (user) => {
 export const validarUsuario = async (user) => {
 
     try {
-
+        //busca o usuário no banco de dados usando o email fornecido.
         const resultado = await buscarUsuarioPorCampo('email', user.email);
 
         //caso ocorra um erro, retorna o erro.
@@ -54,7 +56,7 @@ export const validarUsuario = async (user) => {
         if (!validarSenha) {return { error: 'Senha incorreta.' }};
 
         //gera o token jwt e retorna para o controller.
-        const token = jwt.sign({ id: resultado.data.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: resultado.data.id, cargo: resultado.data.cargo }, process.env.JWT_SECRET, { expiresIn: '1h' });
         return { message: 'Usuário autenticado com sucesso!', token };
         
     } catch (error) {
@@ -63,3 +65,53 @@ export const validarUsuario = async (user) => {
     }
 
 }
+
+export const editarUsuario = async (id, dados) => {
+
+    try {
+        const resultado = await editarUsuario(id, dados);
+
+        if (resultado.error) { return { error: resultado.error }};
+        return { message: 'Usuário editado com sucesso!' };
+
+    } catch (error) {
+        console.error('Erro ao editar usuário:', error);
+        return { error: 'Ocorreu um erro ao editar o usuário.' };
+
+    }
+
+};
+
+export const deletarUsuario = async (id) => {
+
+    try {
+
+        const resultado = await excluirUsuario(id);
+
+        if (resultado.error) { return { error: resultado.error }};
+
+        return { message: 'Usuário deletado com sucesso!' };
+
+    } catch (error) {
+
+        console.error('Erro ao deletar usuário:', error);
+        return { error: 'Ocorreu um erro ao deletar o usuário.' };
+
+    }
+
+};
+
+export const editarSenha = async (id, novaSenha) => {
+
+    try {
+        const resultado = await editarSenha(id, novaSenha);
+
+        if (resultado.error) { return { error: resultado.error }};
+        return { message: 'Senha editada com sucesso!' };
+
+    } catch (error) {
+        console.error('Erro ao editar senha:', error);
+        return { error: 'Ocorreu um erro ao editar a senha.' };
+    }
+
+};

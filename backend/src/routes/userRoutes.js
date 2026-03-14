@@ -1,19 +1,22 @@
 import express from 'express';
-import {authMiddleware} from '../middleware/authMiddleware.js';
+import {authMiddleware, adminMiddleware} from '../middleware/authMiddleware.js';
 import { efetuarCadastro, loginUsuario } from '../controller/usercontroller.js';
 
 const router = express.Router();
 
-//cadastro de usuário
-router.post('/auth/register', efetuarCadastro);
+
 
 //Login de usuário
 router.post('/auth/login', loginUsuario);
 
-router.get('/estaLogado', authMiddleware, (req, res) => {
+//cadastro de usuário
+router.post('/auth/register', authMiddleware, adminMiddleware, efetuarCadastro);
 
-    return res.status(200).json({ message: 'Usuário autenticado!' });
+//rota para editar perfil do usuário com autenticação e autorização de admin.
+router.put('/editarusuario/:id', authMiddleware, adminMiddleware, editarUsuario);
 
-});
+//rota para deletar usuário com autenticação e autorização de admin.
+router.delete('/deletarusuario/:id', authMiddleware, adminMiddleware, deletarUsuario);
+
 
 export default router;
