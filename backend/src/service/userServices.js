@@ -75,9 +75,27 @@ export const validarUsuario = async (user) => {
 export const editUsuario = async (id, dados) => {
 
     try {
+
+        //Verificar se o usuário existe antes de tentar editar
+        const usuarioexiste = await buscarUsuarioPorCampo('id', id);
+
+        if (usuarioexiste.error) { return { error: usuarioexiste.error }}
+        if (!usuarioexiste.data) { return { error: 'Usuário não encontrado.' }};
+
+        //Verificar se o novo email ou cpf já estão cadastrados para outro usuário
+        const emailExistente = await buscarUsuarioPorCampo('email', dados.email);
+        if (emailExistente.error) { return { error: "Erro ao verificar existência do email." } };
+        if (!!emailExistente.exists && emailExistente.exists.id !== id) { return { error: 'Email já cadastrado.' } };
+
+        const cpfExistente = await cpfCadastrado(dados.cpf);
+        if (cpfExistente.error) { return { error: "Erro ao verificar existência do CPF." } };
+        if (!!cpfExistente.exists && cpfExistente.exists.id !== id) { return { error: 'CPF já cadastrado.' } };
+
+
         const resultado = await editarUsuario(id, dados);
 
         if (resultado.error) { return { error: resultado.error }};
+
         return { message: 'Usuário editado com sucesso!' };
 
     } catch (error) {
@@ -91,6 +109,13 @@ export const editUsuario = async (id, dados) => {
 export const deleteUsuario = async (id) => {
 
     try {
+
+        //Verificar se o usuário existe antes de tentar deletar
+        const usuarioexiste = await buscarUsuarioPorCampo('id', id);
+
+        if (usuarioexiste.error) { return { error: usuarioexiste.error }}
+
+        if (!usuarioexiste.data) { return { error: 'Usuário não encontrado.' }};
 
         const resultado = await excluirUsuario(id);
 

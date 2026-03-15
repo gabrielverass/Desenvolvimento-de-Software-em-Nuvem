@@ -6,10 +6,10 @@ import { efetuarCadastro, loginUsuario, editarUsuario, deletarUsuario, listarTod
 const router = express.Router();
 
 //Login de usuário
-router.post('/auth/login', loginUsuario);
+router.post('/login', loginUsuario);
 
 //cadastro de usuário
-router.post('/auth/register', efetuarCadastro);
+router.post('/cadastrarusuario', efetuarCadastro);
 
 //rota para editar perfil do usuário com autenticação e autorização de admin.
 router.patch('/editarusuario/:id', editarUsuario);

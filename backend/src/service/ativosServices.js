@@ -182,6 +182,25 @@ export const editarAtivoPorId = async (id, ativo) => {
             }
         }
 
+        //verifica se o patrimônio foi alterado, caso tenha sido, verifica se o novo patrimônio já existe no banco de dados.
+        if(ativo.patrimonio !== ativoExistente.data.patrimonio) {
+            const patrimonioExistente = await ativoExiste(ativo.patrimonio);
+
+            if (patrimonioExistente.error) {
+                return {
+                    message: 'Erro ao verificar existência do patrimônio.',
+                    error: patrimonioExistente.error
+                }
+            }
+
+            if (patrimonioExistente.exists) {
+                return {
+                    message: 'Patrimônio já cadastrado.',
+                    error: patrimonioExistente.error
+                }
+            }
+        }
+
         //tenta editar o ativo no banco de dados.
         const resultado = await editarAtivo(id, ativo);
 

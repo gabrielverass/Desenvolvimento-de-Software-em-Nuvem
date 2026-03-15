@@ -29,7 +29,6 @@ export const buscarUsuarioPorEmail = async (email) => {
         .select('id, nome, cpf, dataNascimento, email, cargo')
         .eq('email', email)
         .maybeSingle()
-        .omit('hash');
 
     if (error) { 
         return { 
@@ -54,7 +53,6 @@ export const buscarUsuarioPorCampo = async (campo, valor) => {
         .select('id, nome, cpf, dataNascimento, email, cargo')
         .eq(campo, valor)
         .maybeSingle()
-        .omit('hash');;
 
     //caso ocorra um erro, retorna o erro.
     if (error) {
@@ -98,7 +96,6 @@ export const excluirUsuario = async (id) => {
 
     const {status, error} = await supabase
         .from('users')
-        .delete()
         .eq('id', id);
 
     if (error) {

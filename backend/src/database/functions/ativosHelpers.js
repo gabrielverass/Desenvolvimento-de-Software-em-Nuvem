@@ -5,7 +5,8 @@ export async function inserirAtivo(ativo) {
 
     const {error, status} = await supabase
         .from('ativos')
-        .insert([{patrimonio: ativo.patrimonio, tipo : ativo.tipo, nome: ativo.nome, setor: ativo.setor, propriedade: ativo.propriedade, status: ativo.status}])
+        .insert([{patrimonio: ativo.patrimonio, tipo : ativo.tipo, nome: ativo.nome, 
+            setor: ativo.setor, propriedade: ativo.propriedade, status: ativo.status, quantidade: ativo.quantidade, valorUnitario: ativo.valorUnitario}])
         .select();
 
     if (error) {    
@@ -69,7 +70,8 @@ export async function editarAtivo(id, ativo) {
 
     const {error, status} = await supabase
         .from('ativos')
-        .update({patrimonio: ativo.patrimonio, tipo : ativo.tipo, nome: ativo.nome, setor: ativo.setor, propriedade: ativo.propriedade, status: ativo.status})
+        .update({patrimonio: ativo.patrimonio, tipo : ativo.tipo, nome: ativo.nome, 
+            setor: ativo.setor, propriedade: ativo.propriedade, status: ativo.status, quantidade: ativo.quantidade, valorUnitario: ativo.valorUnitario})
         .eq('id', id)
         .select();
 
