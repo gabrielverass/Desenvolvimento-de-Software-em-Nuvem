@@ -1,26 +1,32 @@
 //Camada de serviços, responsável pela lógica de negócios e comunicação entre controller e a database.
 
 import bcrypt from 'bcryptjs';
-import { inserirUsuario, buscarUsuarioPorCampo, editarUsuario, excluirUsuario, editarSenha } from '../database/functions/userHelpers.js';
-import { cpfCadastrado } from '../database/validators/userValidators.js';
+import { inserirUsuario, buscarUsuarioPorCampo, editarUsuario, excluirUsuario, editarSenha, listarUsuarios } from '../database/functions/userHelpers.js';
+import { cpfCadastrado, emailCadastrado } from '../database/validators/userValidators.js';
 import jwt from 'jsonwebtoken';
 
 export const cadastrarUsuario = async (user) => {
 
-    //define o salt para a criptografia da senha, o uso do await é importante para garantir que o servidor consiga responder a outras requisições
-    // sem ser bloqueado durante o processo de criptografia.
-    const salt = await bcrypt.genSalt(10);
-    
-    //criptografa a senha do usuario
-    user.hash = await bcrypt.hash(user.senha, salt);
-    
-    //verifica se o cpf já existe no db.
-    const cpfExistente = await cpfCadastrado(user.cpf);
-
-    //caso exista, retorna uma mensagem de erro e sai da função antes de tentar enviar os dados para o db.
-    if (cpfExistente) {return { error: 'usuario já cadastrado.' }};
-
     try {
+
+        //define o salt para a criptografia da senha, o uso do await é importante para garantir que o servidor consiga responder a outras requisições
+        // sem ser bloqueado durante o processo de criptografia.
+        const salt = await bcrypt.genSalt(10);
+        
+        //criptografa a senha do usuario
+        user.hash = await bcrypt.hash(user.senha, salt);
+        
+        //verifica se o usuario já existe no db.
+        const cpfExistente = await cpfCadastrado(user.cpf);
+        const emailExistente = await emailCadastrado(user.email);
+        if(cpfExistente.error) { return { error: "Erro ao verificar existência do CPF." } };
+        if(emailExistente.error) { return { error: "Erro ao verificar existência do email." } };
+
+        //caso exista, retorna uma mensagem de erro e sai da função antes de tentar enviar os dados para o db.
+        if (cpfExistente.exists || emailExistente.exists) {return { error: 'Usuário já cadastrado.' }};
+
+        //Caso o cargo não seja fornecido, define o cargo como 'usuario' por padrão por questões de segurança.
+        if (!user.cargo) { user.cargo = 'usuario' };
 
         const resultado = await inserirUsuario(user)
 
@@ -66,7 +72,7 @@ export const validarUsuario = async (user) => {
 
 }
 
-export const editarUsuario = async (id, dados) => {
+export const editUsuario = async (id, dados) => {
 
     try {
         const resultado = await editarUsuario(id, dados);
@@ -82,7 +88,7 @@ export const editarUsuario = async (id, dados) => {
 
 };
 
-export const deletarUsuario = async (id) => {
+export const deleteUsuario = async (id) => {
 
     try {
 
@@ -101,17 +107,40 @@ export const deletarUsuario = async (id) => {
 
 };
 
-export const editarSenha = async (id, novaSenha) => {
+export const editSenha = async (id, novaSenha) => {
 
     try {
+        
         const resultado = await editarSenha(id, novaSenha);
 
         if (resultado.error) { return { error: resultado.error }};
+
         return { message: 'Senha editada com sucesso!' };
 
     } catch (error) {
+
         console.error('Erro ao editar senha:', error);
         return { error: 'Ocorreu um erro ao editar a senha.' };
+        
     }
 
 };
+
+export const todosUsuarios = async () => {
+
+    try {
+
+        const resultado = await listarUsuarios();
+
+        if (resultado.error) { return { error: resultado.error }};
+
+        return { message: 'Usuários listados com sucesso!', data: resultado.data };
+
+    } catch (error) {
+
+        console.error('Erro ao listar usuários:', error);
+        return { error: 'Ocorreu um erro ao listar os usuários.' };
+
+    }
+};
+

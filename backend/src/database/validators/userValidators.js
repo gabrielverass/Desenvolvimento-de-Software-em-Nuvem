@@ -3,16 +3,36 @@ import { buscarUsuarioPorCampo} from '../functions/userHelpers.js';
 //Verifica se o cpf já existe no db.
 export const cpfCadastrado = async (cpf) => {
 
-    return await buscarUsuarioPorCampo("cpf", cpf)
-        .then(result => {
-            if (result.data) {
-                return true; // CPF já existe
-            } else {
-                return false; // CPF não existe
-            }
-        })
-        .catch(error => {
-            console.error('Erro ao verificar CPF:', error);
-            return false; // Em caso de erro, assume que o CPF não existe
-        });
+
+    const resultado = await buscarUsuarioPorCampo('cpf', cpf);
+    
+    if (resultado.error) {
+        return {
+            error: resultado.error,
+            message: 'Erro ao verificar CPF.'
+        };
+    }
+
+    return { 
+        exists: resultado.data ? true : false,
+        error: null
+    };
+
+};
+
+export const emailCadastrado = async (email) => {
+
+    const resultado = await buscarUsuarioPorCampo('email', email);
+
+    if (resultado.error) {
+        return {
+            error: resultado.error,
+            message: 'Erro ao verificar email.'
+        };
+    };
+
+    return { 
+        exists: resultado.data ? true : false,
+        error: null
+    };
 };

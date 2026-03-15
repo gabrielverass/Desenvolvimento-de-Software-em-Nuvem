@@ -13,10 +13,10 @@ export const authMiddleware = (req, res, next) => {
         //Verifica se o token é válido.
         const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.JWT_SECRET);
 
-        //Se o token for válido, adiciona o id do usuário ao objeto de requisição.
-        req.userId = decoded;
+        //Se o token for válido, adiciona o id e cargo do usuário ao objeto de requisição.
+        req.userId = decoded.id;
+        req.cargo = decoded.cargo;
 
-        
     } catch (error) {
         res.status(401).json({ message: 'Acesso Negado' });
     }

@@ -1,22 +1,24 @@
 import express from 'express';
-import {authMiddleware, adminMiddleware} from '../middleware/authMiddleware.js';
-import { efetuarCadastro, loginUsuario } from '../controller/usercontroller.js';
+import {authMiddleware} from '../middleware/authMiddleware.js';
+import {adminMiddleware} from '../middleware/adminMiddleware.js';
+import { efetuarCadastro, loginUsuario, editarUsuario, deletarUsuario, listarTodosUsuarios } from '../controller/usercontroller.js';
 
 const router = express.Router();
-
-
 
 //Login de usuário
 router.post('/auth/login', loginUsuario);
 
 //cadastro de usuário
-router.post('/auth/register', authMiddleware, adminMiddleware, efetuarCadastro);
+router.post('/auth/register', efetuarCadastro);
 
 //rota para editar perfil do usuário com autenticação e autorização de admin.
-router.put('/editarusuario/:id', authMiddleware, adminMiddleware, editarUsuario);
+router.patch('/editarusuario/:id', editarUsuario);
 
 //rota para deletar usuário com autenticação e autorização de admin.
-router.delete('/deletarusuario/:id', authMiddleware, adminMiddleware, deletarUsuario);
+router.delete('/deletarusuario/:id', deletarUsuario);
+
+//rota para listar todos os usuários, apenas para admins.
+router.get('/listarusuarios', listarTodosUsuarios);
 
 
 export default router;
