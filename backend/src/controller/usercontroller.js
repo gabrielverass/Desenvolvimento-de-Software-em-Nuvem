@@ -44,7 +44,7 @@ export const loginUsuario = async (req, res) => {
         if(resultado.error) {return res.status(400).json({ error: resultado.error })};
 
         //caso a operação seja bem sucedida, retorna o status, o token e a mensagem de sucesso.
-        return res.status(201).json({ message: resultado.message, token: resultado.token });
+        return res.status(201).json({ message: "Usuário autenticado com sucesso!", resultado });
 
 
     } catch (error) {

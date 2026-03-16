@@ -58,12 +58,18 @@ export const validarUsuario = async (user) => {
         //Caso encontre um usuário, compara a senha fornecida com a senha armazenada no banco de dados.
         const validarSenha = await bcrypt.compare(user.senha, resultado.data.hash);
 
+        resultado.data.hash = undefined; // remove o campo de hash para não expor a senha criptografada
+
         //Caso a senha seja inválida, retorna uma mensagem de erro.
         if (!validarSenha) {return { error: 'Senha incorreta.' }};
 
         //gera o token jwt e retorna para o controller.
         const token = jwt.sign({ id: resultado.data.id, cargo: resultado.data.cargo }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        return { message: 'Usuário autenticado com sucesso!', token };
+
+        return { 
+            user: resultado.data,
+            token: token
+        };
         
     } catch (error) {
         console.error('Erro ao validar usuário:', error);

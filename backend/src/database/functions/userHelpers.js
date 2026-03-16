@@ -50,7 +50,7 @@ export const buscarUsuarioPorCampo = async (campo, valor) => {
     //tenta buscar o usuário no banco de dados usando o campo e valor fornecidos.
     const {data, error} = await supabase
         .from('users')
-        .select('id, nome, cpf, dataNascimento, email, cargo')
+        .select('*')
         .eq(campo, valor)
         .maybeSingle()
 
