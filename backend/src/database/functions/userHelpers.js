@@ -96,6 +96,7 @@ export const excluirUsuario = async (id) => {
 
     const {status, error} = await supabase
         .from('users')
+        .delete()
         .eq('id', id);
 
     if (error) {

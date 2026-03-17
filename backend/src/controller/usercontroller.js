@@ -134,3 +134,22 @@ export const listarTodosUsuarios = async (req, res) => {
 
     }
 };
+
+export const alterarSenha = async (req, res) => {
+
+    try {
+
+        const id = req.params.id;
+        const novaSenha = req.body.novaSenha;
+        const resultado = await editSenha(id, novaSenha);
+
+        if (resultado.error) { return res.status(400).json({ error: "Erro ao alterar senha" })};
+
+        return res.status(200).json({ message: resultado.message });
+
+    } catch (error) {
+        
+        console.error('Erro ao alterar senha:');
+        res.status(500).json({ error: 'Ocorreu um erro ao alterar a senha.' });
+    }
+};

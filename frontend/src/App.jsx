@@ -15,16 +15,7 @@ function App() {
   // ESTADO GLOBAL
   // ============================================
   
-  //implementa a persistência da sessão usando localStorage
-  useEffect(() => {
-    const storedSession = localStorage.getItem('userData');
-    if (storedSession) {
-      setCurrentSession(JSON.parse(storedSession));
-      setIsAuthView(false);
-    }
-  }, []);
-
-  const [currentSession, setCurrentSession] = useState({ role: null, user: null, token: null });
+  const [currentSession, setCurrentSession] = useState({});
   const [currentTab, setCurrentTab] = useState(TAB_EQUIPAMENTOS);
   const [assetData, setAssetData] = useState([]);
   const [isAuthView, setIsAuthView] = useState(true);
@@ -34,24 +25,29 @@ function App() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [senhaError, setSenhaError] = useState(false);
+  const [userData, setUserData] = useState([]);
+  const [isSenhaModalOpen, setIsSenhaModalOpen] = useState(false);
 
-  // Dados dos usuários
-  const [userData, setUserData] = useState([
-    { id: 1, nome: 'Admin Sistema', email: 'admin@email.com', role: 'admin' },
-    { id: 2, nome: 'João Silva', email: 'joao@email.com', role: 'user' },
-    { id: 3, nome: 'Maria Santos', email: 'maria@email.com', role: 'user' }
-  ]);
+  //implementa a persistência da sessão usando localStorage
+  useEffect(() => {
+    const storedSession = localStorage.getItem('userData');
+    if (storedSession) {
+      setCurrentSession(JSON.parse(storedSession));
+      setIsAuthView(false);
+    }
+  }, []);
 
-
+  //==================================
   //FUNÇÕES DE PREENCHIMENTO DE DADOS:
+  //===================================
 
   const loadEquipments = async () => {
 
       //se não houver token, sai da função
-      if (!currentSession.token){
-        mostrarToast('Token ausente ou inválido', 'erro');
+      if (!currentSession.token || currentTab !== TAB_EQUIPAMENTOS) {
         return;
-      } ; 
+      } ;
+      
       //baseurl da API definida no .env
       const baseurl = import.meta.env.VITE_API_URL;
 
@@ -77,16 +73,46 @@ function App() {
       }
     };
 
-  
-    // Recarrega os equipamentos sempre que o token ou a visualização de autenticação mudar (ex: após login/logout)
+  const loadUsers = async () => {
+    
+    //caso não haja token, ou não esteja na aba de usuários, ou o usuário logado não seja admin, sai da função
+    if(!currentSession.token || currentTab !== TAB_USUARIOS || currentSession.role !== ADMIN_ROLE) {
+      return;
+    }
+
+    const baseurl = import.meta.env.VITE_API_URL;
+
+    try {
+      const response = await fetch(`${baseurl}/listarusuarios`, {
+        method: 'GET',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentSession.token}`
+        }
+      });
+      const usuarios = await response.json();
+
+      if (response.ok) {
+        setUserData(usuarios.data);
+      } else {
+        mostrarToast(usuarios.message || 'Erro ao carregar usuários', 'erro');
+      }
+    } catch (error) {
+      mostrarToast('Erro ao conectar com o servidor', 'erro');
+    }
+
+  };
+
+    // Recarrega os dados sempre que o token, a aba atual ou a visualização de autenticação mudarem
     useEffect(() => {
 
       // Dispara a função apenas se não estiver na tela de login
       if (!isAuthView) {
         loadEquipments();
+        loadUsers();
       }
 
-    }, [currentSession.token, isAuthView]);// usa essas variaveis para disparar a função
+    }, [currentSession.token, isAuthView, currentTab]);// usa essas variaveis para disparar a função
 
 
   // ============================================
@@ -145,20 +171,16 @@ function App() {
 
     if (response.ok) {
 
-      setCurrentSession({
-        role: data.resultado.role,
+      const sessionData = {
+        role: data.resultado.user.cargo,
         user: data.resultado.user,
         token: data.resultado.token
-      });
+      }
+
+      setCurrentSession(sessionData);
 
       //armazena os dados do usuário no localStorage para persistência
-      localStorage.setItem('userData', 
-        JSON.stringify({
-          role: data.resultado.role,
-          user: data.resultado.user,
-          token: data.resultado.token
-        })
-      );
+      localStorage.setItem('userData', JSON.stringify(sessionData));
       
       setIsAuthView(false); // Libera o acesso ao sistema
       mostrarToast(`Bem-vindo, ${data.resultado.user.nome}!`);
@@ -170,20 +192,34 @@ function App() {
   }
 };
 
-  const handleCadastro = (e) => {
+//Função para editar a senha do usuário
+  const handleEditSenha = async (e) => {
     e.preventDefault();
-    const senha = e.target.senha.value;
-    const confirmar = e.target.confirmarSenha.value;
-    
-    if (!validarSenhas(senha, confirmar)) {
-      mostrarToast('As senhas não coincidem!', 'erro');
-      return;
-    }
-    
-    mostrarToast('Conta criada com sucesso! Faça login.');
-    e.target.reset();
-    toggleAuth('login');
+    const id = editingItem.id;
+    const novaSenha = e.target.novaSenha.value;
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/editarsenha/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentSession.token}`
+        },
+        body: JSON.stringify({ novaSenha })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        mostrarToast('Senha atualizada com sucesso!', 'sucesso');
+        closeEditModal();
+        loadUsers();
+      } else {
+        mostrarToast(data.message || 'Erro ao atualizar a senha', 'erro');
+      }
+    } catch (error) {
+      mostrarToast('Erro ao conectar com o servidor', 'erro');
+    };
   };
+
 
   const handleLogout = () => {
     mostrarToast('Logout realizado');
@@ -191,7 +227,6 @@ function App() {
       setCurrentSession({ role: null, user: null, token: null });
       setIsAuthView(true);
       // Limpa os dados do localStorage
-      localStorage.removeItem('token');
       localStorage.removeItem('userData');
     }, 1000);
   };
@@ -219,14 +254,28 @@ function App() {
     setIsEditModalOpen(true);
   };
 
+  //Cria um modal específico para edição de senha, para evitar confusão com o modal de edição de usuário
+  const openEditSenha = (usuario) => {
+    setEditingItem(usuario);
+    setIsSenhaModalOpen(true);
+  };
+
+  const closeSenhaModal = () => {
+    setEditingItem(null);
+    setIsSenhaModalOpen(false);
+  };
+  //=====================================================================================================
+
   const closeEditModal = () => {
     setEditingItem(null);
     setIsEditModalOpen(false);
   };
 
+  //função para salvar as edições de equipamentos e usuários.
   const handleEditSave = async (e) => {
     e.preventDefault();
-    
+
+    // Logica para editar equipamentos
     if (currentTab === TAB_EQUIPAMENTOS && editingItem) {
       //cria um payload com os dados editados, e caso não haja edição em algum campo, mantém o valor anterior.
       const payload = {
@@ -270,32 +319,47 @@ function App() {
       }
     }
     
+    // Logica para editar usuários
     if (currentTab === TAB_USUARIOS && editingItem) {
-      const nome = e.target.nome?.value;
-      const email = e.target.email?.value;
-      const role = e.target.role?.value;
-      
-      const updatedUserData = userData.map(user => 
-        user.id === editingItem.id 
-          ? { ...user, nome: nome || user.nome, email: email || user.email, role: role || user.role }
-          : user
-      );
-      
-      setUserData(updatedUserData);
-      
-      if (currentSession.user?.id === editingItem.id) {
-        setCurrentSession({
-          ...currentSession,
-          user: { ...currentSession.user, nome, email, role }
+      const payload = {
+        id: editingItem.id,
+        nome: e.target.nome?.value || editingItem.nome,
+        cpf: e.target.cpf?.value || editingItem.cpf,
+        dataNascimento: e.target.dataNascimento?.value || editingItem.dataNascimento,
+        email: e.target.email?.value || editingItem.email,
+        cargo: e.target.cargo?.value || editingItem.role,
+      };
+
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/editarusuario/${editingItem.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentSession.token}`
+          },
+          body: JSON.stringify(payload)
         });
-      }
+
+        if (response.ok) {
+          mostrarToast('Usuário atualizado com sucesso!', 'sucesso');
+          closeEditModal();
+          loadUsers();
+        };
+
+        if (!response.ok) {
+          mostrarToast('Erro ao atualizar o usuário', 'erro');
+          return;
+        };
+      } catch (error) {
+        mostrarToast('Erro ao atualizar o usuário', 'erro');
+      };
       
-      mostrarToast('Usuário atualizado com sucesso!');
     }
     
     closeEditModal();
   };
 
+  //Função para deletar equipamentos e usuários.
   const handleDelete = async (id, tipo) => {
     if (window.confirm(`Tem certeza que deseja excluir este ${tipo}?`)) {
       if (tipo === 'equipamento') {
@@ -323,6 +387,32 @@ function App() {
           mostrarToast('Erro ao deletar o equipamento', 'erro');
         };
       }
+
+      if(tipo === 'usuário') {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/deletarusuario/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              'authorization': `Bearer ${currentSession.token}`
+            }          
+          });
+
+          if (response.ok) {
+            mostrarToast('Usuário deletado com sucesso!');
+            loadUsers(); // Recarrega os usuários para refletir a exclusão
+          }
+          if (!response.ok) {
+            mostrarToast('Erro ao deletar o usuário', 'erro');
+            return;
+          };
+
+        } catch (error) {
+          mostrarToast('Erro ao deletar o usuário', 'erro');
+        }
+
+      }
+      
     }
   };
 
@@ -364,6 +454,44 @@ function App() {
       mostrarToast('Erro ao cadastrar o equipamento', 'erro');
     }
   };
+
+  const handleNovoUsuario = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      nome: e.target.nome.value,
+      cpf: e.target.cpf.value,
+      dataNascimento: e.target.dataNascimento.value,
+      email: e.target.email.value,
+      senha: e.target.senha.value,
+      cargo: e.target.cargo.value
+    };
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/cadastrarusuario`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentSession.token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        mostrarToast('Usuário cadastrado com sucesso!');
+        closeModal();
+        loadUsers();
+      };
+
+      if (!response.ok) {
+        mostrarToast('Erro ao cadastrar o usuário', 'erro');
+        return;
+      };
+    } catch (error) {
+      mostrarToast('Erro ao cadastrar o usuário', 'erro');
+    };
+
+    };
 
   // ============================================
   // RENDERIZAÇÃO PRINCIPAL
@@ -488,6 +616,7 @@ function App() {
                   currentSession={currentSession}
                   userRole={currentSession.role}
                   onEditar={openEditEquipamento}
+                  onEditarSenha={openEditSenha}
                   onExcluir={handleDelete}
                   onNovo={openModal}
                 />
@@ -500,7 +629,9 @@ function App() {
                   assetData={assetData}
                   userRole={currentSession.role}
                   onEditar={openEditUsuario}
+                  onEditarSenha={openEditSenha}
                   onExcluir={handleDelete}
+                  onNovo={openModal}
                 />
               )}
             </main>
@@ -508,8 +639,55 @@ function App() {
         </div>
       )}
 
+      {/* MODAL NOVO USUÁRIO */}
+      {isModalOpen && currentTab === TAB_USUARIOS && (
+        <aside className="modal-overlay">
+          <div className="modal-corpo">
+            <h3>Novo Usuário</h3>
+            <form onSubmit={handleNovoUsuario}>
+              <div className="campo-grupo">
+                <label className="campo-grupo__label">Nome</label>
+                <input type="text" name="nome" className="campo-grupo__input" required />
+              </div>
+              <div className="campo-grupo">
+                <label className="campo-grupo__label">CPF</label>
+                <input type="text" name="cpf" className="campo-grupo__input" required />
+              </div>
+              <div className="campo-grupo">
+                <label className="campo-grupo__label">Data de Nascimento</label>
+                <input type="date" name="dataNascimento" className="campo-grupo__input" required />
+              </div>
+              <div className="campo-grupo">
+                <label className="campo-grupo__label">Email</label>
+                <input type="email" name="email" className="campo-grupo__input" required />
+              </div>
+              <div className="campo-grupo">
+                <label className="campo-grupo__label">Senha</label>
+                <input type="password" name="senha" id="reg-senha" className="campo-grupo__input" required onInput={handleConfirmarSenhaInput} />
+              </div>
+              <div className="campo-grupo">
+                <label className="campo-grupo__label">Confirmar Senha</label>
+                <input type="password" name="confirmarSenha" id="reg-confirmar-senha" className={`campo-grupo__input ${senhaError ? 'campo-grupo__input--erro' : ''}`} required onInput={handleConfirmarSenhaInput} />
+                {senhaError && <span className="campo-grupo__erro">As senhas não coincidem</span>}
+              </div>
+              <div className="campo-grupo">
+                <label className="campo-grupo__label">Cargo</label>
+                <select name="cargo" className="campo-grupo__input" required>
+                  <option value="USER">Usuário</option>
+                  <option value="ADMIN">Administrador</option>
+                </select>
+              </div>
+              <div >
+                <button type="button" className="btn btn--primario"  onClick={closeModal}>Cancelar</button>
+                <button type="submit" className="btn btn--primario">Salvar</button>
+              </div>
+            </form>
+          </div>
+        </aside>
+      )}
+
       {/* MODAL NOVO EQUIPAMENTO */}
-      {isModalOpen && (
+      {isModalOpen && currentTab === TAB_EQUIPAMENTOS && (
         <aside className="modal-overlay">
           <div className="modal-corpo">
             <h3>Novo Equipamento</h3>
@@ -639,6 +817,14 @@ function App() {
                 <input type="text" name="nome" defaultValue={editingItem.nome} className="campo-grupo__input" required />
               </div>
               <div className="campo-grupo">
+                <label className="campo-grupo__label">CPF</label>
+                <input type="text" name="cpf" defaultValue={editingItem.cpf} className="campo-grupo__input" required />
+              </div>
+              <div className="campo-grupo">
+                <label className="campo-grupo__label">Data de Nascimento</label>
+                <input type="date" name="dataNascimento" defaultValue={editingItem.dataNascimento} className="campo-grupo__input" required />
+              </div>
+              <div className="campo-grupo">
                 <label className="campo-grupo__label">Email</label>
                 <input type="email" name="email" defaultValue={editingItem.email} className="campo-grupo__input" required />
               </div>
@@ -649,8 +835,32 @@ function App() {
                   <option value="user">Usuário</option>
                 </select>
               </div>
-              <div >
+              <div>
                 <button type="button" className="btn btn--primario"  onClick={closeEditModal}>Cancelar</button>
+                <button type="submit" className="btn btn--primario">Salvar</button>
+              </div>
+            </form>
+          </div>
+        </aside>
+      )}
+
+      {/* MODAL EDITAR SENHA */}
+      {isSenhaModalOpen && editingItem &&(
+        <aside className="modal-overlay">
+          <div className="modal-corpo">
+            <h3>Alterar Senha de {editingItem.nome}</h3>
+            <form onSubmit={handleEditSenha}>
+              <div className="campo-grupo">
+                <label className="campo-grupo__label">Nova Senha</label>
+                <input type="password" name="novaSenha" className="campo-grupo__input" required />
+              </div>
+              <div>
+              <div className="campo-grupo">
+                <label className="campo-grupo__label">Confirmar Nova Senha</label>
+                <input type="password" name="confirmarNovaSenha" className={`campo-grupo__input ${senhaError ? 'campo-grupo__input--erro' : ''}`} required onInput={handleConfirmarSenhaInput} />
+                {senhaError && <span className="campo-grupo__erro">As senhas não coincidem</span>}
+              </div>
+                <button type="button" className="btn btn--primario" onClick={closeSenhaModal}>Cancelar</button>
                 <button type="submit" className="btn btn--primario">Salvar</button>
               </div>
             </form>
