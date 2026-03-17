@@ -2,9 +2,7 @@ import React from 'react';
 import { ADMIN_ROLE } from '../utils/constants';
 
 export function Equipamentos({ 
-  equipamentos, 
-  userData,
-  currentSession,
+  equipamentos,
   onEditar,
   onExcluir,
   onNovo,
@@ -18,7 +16,6 @@ export function Equipamentos({
     <div className="app-main">
       <div className="sessao-topo">
         <h2 id="page-title">Equipamentos</h2>
-        {userRole === ADMIN_ROLE && (
           <button 
             className="btn btn--primario" 
             style={{ width: 'auto' }} 
@@ -26,7 +23,6 @@ export function Equipamentos({
           >
             + Novo
           </button>
-        )}
       </div>
     
       <div className="tabela-container">
@@ -34,12 +30,12 @@ export function Equipamentos({
           <thead id="table-head">
             <tr>
               <th>Patrimônio</th>
+              <th>Tipo</th>
               <th>Equipamento</th>
               <th>Setor</th>
               <th>Status</th>
               <th>Valor Unit. (R$)</th>
-              <th>Qtd</th>
-              <th>Valor Total (R$)</th> 
+              <th>Propriedade</th> 
               <th>Ações</th>
             </tr>
           </thead>
@@ -51,13 +47,12 @@ export function Equipamentos({
             ) : (
               listaParaExibir.map(item => {
                 // Cálculo usando os nomes exatos da sua API (valorUnitario)
-                const vUnitario = item.valorUnitario || 0;
-                const qtd = item.quantidade || 0;
-                const valorTotal = vUnitario * qtd;
+                const vUnitario = item.valor || 0;
 
                 return (
                   <tr key={item.id}>
                     <td>{item.patrimonio}</td>
+                    <td>{item.tipo}</td>
                     <td>{item.nome}</td>
                     <td>{item.setor}</td>
                     <td>
@@ -66,10 +61,7 @@ export function Equipamentos({
                       </span>
                     </td>
                     <td>{vUnitario.toFixed(2).replace('.', ',')}</td>
-                    <td>{qtd}</td>
-                    <td style={{ fontWeight: 'bold' }}>
-                      {valorTotal.toFixed(2).replace('.', ',')}
-                    </td>
+                    <td>{item.propriedade}</td>
                     <td>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button 
@@ -79,16 +71,13 @@ export function Equipamentos({
                         >
                           ✏️
                         </button>
-                        
-                        {userRole === ADMIN_ROLE && (
-                          <button 
-                            className="btn-icone btn-excluir"
-                            onClick={() => onExcluir(item.id, 'equipamento')}
-                            title="Excluir"
-                          >
-                            �️
-                          </button>
-                        )}
+                        <button 
+                          className="btn-icone btn-excluir"
+                          onClick={() => onExcluir(item.id, 'equipamento')}
+                          title="Excluir"
+                        >
+                          🗑️
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -103,10 +92,10 @@ export function Equipamentos({
               <tr>
                 <td id="total" colSpan="5">TOTAL GERAL:</td>
                 <td>
-                  {listaParaExibir.reduce((acc, item) => acc + (item.quantidade || 0), 0)}
+                  {listaParaExibir.length}
                 </td>
                 <td id="somatorio" colSpan="2">
-                  R$ {listaParaExibir.reduce((acc, item) => acc + ((item.valorUnitario || 0) * (item.quantidade || 0)), 0).toFixed(2).replace('.', ',')}
+                  R$ {listaParaExibir.reduce((acc, item) => acc + ((item.valor || 0)), 0).toFixed(2).replace('.', ',')}
                 </td>
               </tr>
             </tfoot>

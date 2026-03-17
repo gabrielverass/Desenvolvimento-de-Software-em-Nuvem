@@ -122,7 +122,7 @@ export const deletarAtivoPorId = async (id) => {
     try {
 
         //tenta localizar o ativo antes de tentar deletar.
-        ativo = await buscarAtivoPorCampo('id', id);
+        const ativo = await buscarAtivoPorCampo('id', id);
 
         if (ativo.error) {
             return {

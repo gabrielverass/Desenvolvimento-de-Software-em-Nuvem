@@ -44,8 +44,8 @@ function App() {
 
 
   //FUNÇÕES DE PREENCHIMENTO DE DADOS:
-  useEffect(() => {
-    const loadEquipments = async () => {
+
+  const loadEquipments = async () => {
 
       //se não houver token, sai da função
       if (!currentSession.token){
@@ -77,11 +77,16 @@ function App() {
       }
     };
 
-    // Dispara a função apenas se não estiver na tela de login
-    if (!isAuthView) {
-      loadEquipments();
-    }
-  }, [currentSession.token, isAuthView]);// usa essas variaveis para disparar a função
+  
+    // Recarrega os equipamentos sempre que o token ou a visualização de autenticação mudar (ex: após login/logout)
+    useEffect(() => {
+
+      // Dispara a função apenas se não estiver na tela de login
+      if (!isAuthView) {
+        loadEquipments();
+      }
+
+    }, [currentSession.token, isAuthView]);// usa essas variaveis para disparar a função
 
 
   // ============================================
@@ -165,7 +170,6 @@ function App() {
   }
 };
 
-
   const handleCadastro = (e) => {
     e.preventDefault();
     const senha = e.target.senha.value;
@@ -220,36 +224,50 @@ function App() {
     setIsEditModalOpen(false);
   };
 
-  const handleEditSave = (e) => {
+  const handleEditSave = async (e) => {
     e.preventDefault();
     
     if (currentTab === TAB_EQUIPAMENTOS && editingItem) {
-      const nome = e.target.nome?.value;
-      const patrimonio = e.target.patrimonio?.value;
-      const setor = e.target.setor?.value;
-      const status = e.target.status?.value;
-      const valor = parseFloat(e.target.valor?.value) || 0;
-      const quantidade = parseInt(e.target.quantidade?.value) || 1;
-      
-      const updatedAssetData = assetData.map(item => 
-        item.id === editingItem.id 
-          ? { 
-              ...item, 
-              nome: nome || item.nome,
-              patrimonio: patrimonio || item.patrimonio,
-              setor: setor || item.setor,
-              status: status || item.status,
-              valor: valor,
-              quantidade: quantidade,
-              userId: currentSession.role === ADMIN_ROLE && e.target.proprietario 
-                ? parseInt(e.target.proprietario.value) 
-                : item.userId
-            }
-          : item
-      );
-      
-      setAssetData(updatedAssetData);
-      mostrarToast('Equipamento atualizado com sucesso!');
+      //cria um payload com os dados editados, e caso não haja edição em algum campo, mantém o valor anterior.
+      const payload = {
+        id: editingItem.id,
+        patrimonio: e.target.patrimonio?.value || editingItem.patrimonio,
+        tipo: e.target.tipo?.value || editingItem.tipo,
+        nome: e.target.nome?.value || editingItem.nome,
+        setor: e.target.setor?.value || editingItem.setor,
+        status: e.target.status?.value || editingItem.status,
+        valor: parseFloat(e.target.valor?.value) || editingItem.valor,
+        propriedade: e.target.propriedade?.value || editingItem.propriedade,
+      };
+
+      try {
+
+        //faz a chamada da API para editar o equipamento, usando o token para autenticação e passando o payload com os dados editados
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/editarequipamento/${editingItem.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentSession.token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          mostrarToast('Equipamento atualizado com sucesso!', 'sucesso');
+          closeEditModal();
+          loadEquipments(); // Recarrega os equipamentos para refletir as mudanças
+        }
+
+        if (!response.ok) {
+          toastMessage('Erro ao atualizar o equipamento', 'erro');
+          return;
+        }
+  
+
+      } catch (error) {
+        mostrarToast('Erro ao atualizar o equipamento', 'erro');
+        alert("disparou no catch " + error.message)
+      }
     }
     
     if (currentTab === TAB_USUARIOS && editingItem) {
@@ -278,39 +296,73 @@ function App() {
     closeEditModal();
   };
 
-  const handleDelete = (id, tipo) => {
+  const handleDelete = async (id, tipo) => {
     if (window.confirm(`Tem certeza que deseja excluir este ${tipo}?`)) {
-      mostrarToast(`${tipo} excluído com sucesso!`);
+      if (tipo === 'equipamento') {
+
+        try {
+          //chama a API para deletar o equipamento, usando o token para autenticação
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/deletarequipamento/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              'authorization': `Bearer ${currentSession.token}`
+            }
+          });
+
+          if (response.ok) {
+            mostrarToast('Equipamento deletado com sucesso!');
+            loadEquipments(); // Recarrega os equipamentos para refletir a exclusão
+          }
+          if (!response.ok) {
+            mostrarToast('Erro ao deletar o equipamento', 'erro');
+            return;
+          };
+        }
+        catch (error) {
+          mostrarToast('Erro ao deletar o equipamento', 'erro');
+        };
+      }
     }
   };
 
-  const handleNovoEquipamento = (e) => {
+  const handleNovoEquipamento = async (e) => {
     e.preventDefault();
-    const nome = e.target.nome.value;
-    const patrimonio = e.target.patrimonio.value;
-    const setor = e.target.setor.value;
-    const status = e.target.status.value;
-    const valor = parseFloat(e.target.valor.value) || 0;
-    const quantidade = parseInt(e.target.quantidade.value) || 1;
     
-    const proprietarioId = currentSession.role === ADMIN_ROLE 
-      ? parseInt(e.target.proprietario?.value) 
-      : currentSession.user?.id;
-    
-    const novoEquipamento = {
-      id: assetData.length + 1,
-      patrimonio,
-      nome,
-      setor,
-      status,
-      valor,
-      quantidade,
-      userId: proprietarioId
+    const payload = {
+      patrimonio: e.target.patrimonio.value,
+      tipo: e.target.tipo.value,
+      nome: e.target.nome.value,
+      setor: e.target.setor.value,
+      status: e.target.status.value,
+      valor: parseFloat(e.target.valor.value),
+      propriedade: e.target.propriedade.value,
     };
-    
-    setAssetData([...assetData, novoEquipamento]);
-    mostrarToast('Equipamento cadastrado com sucesso!');
-    closeModal();
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/cadastrarequipamento`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentSession.token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        mostrarToast('Equipamento cadastrado com sucesso!');
+        closeModal();
+        loadEquipments();
+      };
+
+      if (!response.ok) {
+        mostrarToast('Erro ao cadastrar o equipamento', 'erro');
+        return;
+      };
+
+    } catch (error) {
+      mostrarToast('Erro ao cadastrar o equipamento', 'erro');
+    }
   };
 
   // ============================================
@@ -463,17 +515,26 @@ function App() {
             <h3>Novo Equipamento</h3>
             <form onSubmit={handleNovoEquipamento}>
               <div className="campo-grupo">
-                <label className="campo-grupo__label">Nome</label>
-                <input type="text" name="nome" className="campo-grupo__input" required />
-              </div>
-              <div className="campo-grupo">
                 <label className="campo-grupo__label">Patrimônio</label>
                 <input type="text" name="patrimonio" className="campo-grupo__input" required />
               </div>
               <div className="campo-grupo">
+                <label className="campo-grupo__label">Tipo</label>
+                <select name="tipo" className="campo-grupo__input" required>
+                  <option value="Computador">Computador</option>
+                  <option value="Impressora">Impressora</option>
+                  <option value="Monitor">Monitor</option>
+                  <option value="Teclado">Teclado</option>
+                  <option value="Mouse">Mouse</option>
+                </select>
+              </div>
+              <div className="campo-grupo">
+                <label className="campo-grupo__label">Nome</label>
+                <input type="text" name="nome" className="campo-grupo__input" required />
+              </div>
+              <div className="campo-grupo">
                 <label className="campo-grupo__label">Setor</label>
                 <select name="setor" className="campo-grupo__input" required>
-                  <option value="">Selecione...</option>
                   <option value="TI">TI</option>
                   <option value="RH">RH</option>
                   <option value="Vendas">Vendas</option>
@@ -493,20 +554,12 @@ function App() {
                 <input type="number" name="valor" step="0.01" className="campo-grupo__input" required />
               </div>
               <div className="campo-grupo">
-                <label className="campo-grupo__label">Quantidade</label>
-                <input type="number" name="quantidade" min="1" defaultValue="1" className="campo-grupo__input" required />
-              </div>
-              {currentSession.role === ADMIN_ROLE && (
-                <div className="campo-grupo">
-                  <label className="campo-grupo__label">Proprietário</label>
-                  <select name="proprietario" className="campo-grupo__input" required>
-                    <option value="">Selecione...</option>
-                    {userData.map(u => (
-                      <option key={u.id} value={u.id}>{u.nome}</option>
-                    ))}
+                  <label className="campo-grupo__label">Propriedade</label>
+                  <select name="propriedade" className="campo-grupo__input" required>
+                    <option value="Proprio">Proprio</option>
+                    <option value="Locado">Locado</option>
                   </select>
                 </div>
-              )}
               <div >
                 <button type="button" className="btn btn--primario"  onClick={closeModal}>Cancelar</button>
                 <button type="submit" className="btn btn--primario">Salvar</button>
@@ -523,12 +576,20 @@ function App() {
             <h3>Editar Equipamento</h3>
             <form onSubmit={handleEditSave}>
               <div className="campo-grupo">
-                <label className="campo-grupo__label">Nome</label>
-                <input type="text" name="nome" defaultValue={editingItem.nome} className="campo-grupo__input" required />
-              </div>
-              <div className="campo-grupo">
                 <label className="campo-grupo__label">Patrimônio</label>
                 <input type="text" name="patrimonio" defaultValue={editingItem.patrimonio} className="campo-grupo__input" required />
+              </div>
+              <label className="campo-grupo__label">Tipo</label>
+              <select name="tipo" defaultValue={editingItem.tipo} className="campo-grupo__input" required>
+                <option value="Computador">Computador</option>
+                <option value="Impressora">Impressora</option>
+                <option value="Monitor">Monitor</option>
+                <option value="Teclado">Teclado</option>
+                <option value="Mouse">Mouse</option>
+              </select>
+              <div className="campo-grupo">
+                <label className="campo-grupo__label">Nome</label>
+                <input type="text" name="nome" defaultValue={editingItem.nome} className="campo-grupo__input" required />
               </div>
               <div className="campo-grupo">
                 <label className="campo-grupo__label">Setor</label>
@@ -551,20 +612,13 @@ function App() {
                 <label className="campo-grupo__label">Valor</label>
                 <input type="number" name="valor" step="0.01" defaultValue={editingItem.valor} className="campo-grupo__input" required />
               </div>
-              <div className="campo-grupo">
-                <label className="campo-grupo__label">Quantidade</label>
-                <input type="number" name="quantidade" min="1" defaultValue={editingItem.quantidade} className="campo-grupo__input" required />
-              </div>
-              {currentSession.role === ADMIN_ROLE && (
                 <div className="campo-grupo">
-                  <label className="campo-grupo__label">Proprietário</label>
-                  <select name="proprietario" defaultValue={editingItem.userId} className="campo-grupo__input" required>
-                    {userData.map(u => (
-                      <option key={u.id} value={u.id}>{u.nome}</option>
-                    ))}
+                  <label className="campo-grupo__label">Propriedade</label>
+                  <select name="propriedade" defaultValue={editingItem.propriedade} className="campo-grupo__input" required>
+                    <option value="Proprio">Proprio</option>
+                    <option value="Locado">Locado</option>
                   </select>
                 </div>
-              )}
               <div >
                 <button type="button" className="btn btn--primario"  onClick={closeEditModal}>Cancelar</button>
                 <button type="submit" className="btn btn--primario">Salvar</button>
