@@ -141,8 +141,14 @@ export const deleteUsuario = async (id) => {
 export const editSenha = async (id, novaSenha) => {
 
     try {
+
+        const salt = await bcrypt.genSalt(10);
         
-        const resultado = await editarSenha(id, novaSenha);
+        //criptografa a senha do usuario
+        const senhaCriptografada = await bcrypt.hash(novaSenha, salt);
+
+        
+        const resultado = await editarSenha(id, senhaCriptografada);
 
         if (resultado.error) { return { error: resultado.error }};
 
@@ -175,3 +181,18 @@ export const todosUsuarios = async () => {
     }
 };
 
+export const isadmin = async (id) => {
+
+    try {
+        const resultado = await buscarUsuarioPorCampo('id', id);
+
+        if (resultado.error) { return { error: resultado.error }}
+
+        if (!resultado.data) { return { error: 'Usuário não encontrado.' }};
+
+        return { isAdmin: resultado.data.cargo === 'ADMIN' };
+    } catch (error) {
+        console.error('Erro ao verificar se o usuário é admin:', error);
+        return { error: 'Ocorreu um erro ao verificar se o usuário é admin.' };
+    }
+};
