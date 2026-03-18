@@ -42,13 +42,13 @@ export const listarAtivos = async (req, res) => {
 
 };
 
-export const buscarAtivoPorCampo = async (req, res) => {
+export const buscarAtivoPorPatrimonio = async (req, res) => {
 
     try {
 
-        const { campo, valor } = req.params;
+        const valor = req.params.patrimonio;
 
-        const resultado = await buscarAtivo(campo, valor);
+        const resultado = await buscarAtivo("patrimonio", valor);
 
         if (resultado.error) {
             return res.status(400).json({ message: resultado.message,});

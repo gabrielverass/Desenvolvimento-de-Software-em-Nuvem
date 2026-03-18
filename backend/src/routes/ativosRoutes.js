@@ -1,6 +1,6 @@
 import express from 'express';
 import {authMiddleware} from '../middleware/authMiddleware.js';
-import {criarNovoAtivo, listarAtivos, buscarAtivoPorCampo, editarAtivo, deletarAtivo} from '../controller/ativosController.js';
+import {criarNovoAtivo, listarAtivos, buscarAtivoPorPatrimonio, editarAtivo, deletarAtivo} from '../controller/ativosController.js';
 
 const router = express.Router();
 
@@ -8,7 +8,7 @@ const router = express.Router();
 router.post('/cadastrarequipamento', authMiddleware, criarNovoAtivo);
 
 //rota para buscar um ativo por patrimônio, protegida por autenticação.
-router.get('/buscarequipamento/:patrimonio', authMiddleware, buscarAtivoPorCampo);
+router.get('/buscarequipamento/:patrimonio', authMiddleware, buscarAtivoPorPatrimonio);
 
 //rota para listar todos os ativos, protegida por autenticação.
 router.get('/listarequipamentos', authMiddleware, listarAtivos);
