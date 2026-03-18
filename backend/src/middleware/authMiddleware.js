@@ -23,7 +23,7 @@ export const authMiddleware = (req, res, next) => {
         return next(); 
 
     } catch (error) {
-        // O return aqui impede que o código continue
+        //impede que o código continue
         return res.status(401).json({ message: 'Acesso Negado ou Token Expirado' });
     }
 };

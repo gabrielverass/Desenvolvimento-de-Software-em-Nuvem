@@ -11,7 +11,6 @@ export async function inserirAtivo(ativo) {
 
     if (error) {    
         return {
-
             message: 'Erro ao criar ativo!',
             error: error.message
         };
@@ -31,7 +30,7 @@ export async function listarAtivos() {
         .select('*');
 
     if (error) {  
-        return {
+        return {   
             message: 'Erro ao listar ativos!',
             error: error.message
         };

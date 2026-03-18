@@ -58,11 +58,11 @@ export const validarUsuario = async (user) => {
         //caso ocorra um erro, retorna o erro.
         if (resultado.error) { 
             errorLogger.error(`Erro ao buscar usuário: ${resultado.error}`);
-            return { success: false, error: "Erro ao buscar usuário." }
+            return {error: "Erro ao buscar usuário." }
         };
 
         //Caso não encontre um usuário, retorna uma mensagem de erro.
-        if (!resultado.data) {return { success: false, error: 'Usuário não encontrado.' }};
+        if (!resultado.data) {return {error: 'Usuário não encontrado.' }};
 
         //Caso encontre um usuário, compara a senha fornecida com a senha armazenada no banco de dados.
         const validarSenha = await bcrypt.compare(user.senha, resultado.data.hash);

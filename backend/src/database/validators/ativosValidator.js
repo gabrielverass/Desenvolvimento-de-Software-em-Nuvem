@@ -16,4 +16,5 @@ export const ativoExiste = async (patrimonio) => {
         exists: resultado.data ? true : false,
         error: null
     };
+    
 };
