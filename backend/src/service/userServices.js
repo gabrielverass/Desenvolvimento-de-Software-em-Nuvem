@@ -5,6 +5,10 @@ import { inserirUsuario, buscarUsuarioPorCampo, editarUsuario, excluirUsuario, e
 import { cpfCadastrado, emailCadastrado } from '../database/validators/userValidators.js';
 import jwt from 'jsonwebtoken';
 
+//adiciona o logger
+import {accessLogger, errorLogger} from '../logger/logger.js';
+
+//Função para cadastrar um usuário, usada no controller para cadastrar um novo usuário.
 export const cadastrarUsuario = async (user) => {
 
     try {
@@ -37,13 +41,14 @@ export const cadastrarUsuario = async (user) => {
         return { message: resultado.message, status: resultado.status };
 
     } catch (error) {
-        console.error('Erro ao cadastrar usuário:', error);
+        errorLogger.error(`Erro ao cadastrar usuário: ${error.message}`);
         return { error: 'Ocorreu um erro ao cadastrar o usuário.' };
     };
 
 
 };
 
+//Função para validar o usuário, usada no controller para validar o login do usuário.
 export const validarUsuario = async (user) => {
 
     try {
@@ -51,9 +56,13 @@ export const validarUsuario = async (user) => {
         const resultado = await buscarUsuarioPorCampo('email', user.email);
 
         //caso ocorra um erro, retorna o erro.
-        if (resultado.error) { return { error: resultado.error }};
+        if (resultado.error) { 
+            errorLogger.error(`Erro ao buscar usuário: ${resultado.error}`);
+            return { success: false, error: "Erro ao buscar usuário." }
+        };
+
         //Caso não encontre um usuário, retorna uma mensagem de erro.
-        if (!resultado.data) {return { error: 'Usuário não encontrado.' }};
+        if (!resultado.data) {return { success: false, error: 'Usuário não encontrado.' }};
 
         //Caso encontre um usuário, compara a senha fornecida com a senha armazenada no banco de dados.
         const validarSenha = await bcrypt.compare(user.senha, resultado.data.hash);
@@ -66,18 +75,22 @@ export const validarUsuario = async (user) => {
         //gera o token jwt e retorna para o controller.
         const token = jwt.sign({ id: resultado.data.id, cargo: resultado.data.cargo }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        return { 
+        //Registra o acesso do usuário autenticado no logger de acesso.
+        accessLogger.info(`Usuário ${resultado.data.id} autenticado com sucesso.`);
+
+        return {
             user: resultado.data,
             token: token
         };
         
     } catch (error) {
-        console.error('Erro ao validar usuário:', error);
+        errorLogger.error(`Erro ao validar usuário: ${error.message}`);
         return { error: 'Ocorreu um erro ao validar o usuário.' };
     }
 
 }
 
+//Função para editar um usuário, usada no controller para permitir que o admin edite outros usuários.
 export const editUsuario = async (id, dados) => {
 
     try {
@@ -105,13 +118,14 @@ export const editUsuario = async (id, dados) => {
         return { message: 'Usuário editado com sucesso!' };
 
     } catch (error) {
-        console.error('Erro ao editar usuário:', error);
+        errorLogger.error(`Erro ao editar usuário: ${error.message}`);
         return { error: 'Ocorreu um erro ao editar o usuário.' };
 
     }
 
 };
 
+//Função para deletar um usuário, usada no controller para permitir que o admin delete outros usuários.
 export const deleteUsuario = async (id) => {
 
     try {
@@ -131,13 +145,14 @@ export const deleteUsuario = async (id) => {
 
     } catch (error) {
 
-        console.error('Erro ao deletar usuário:', error);
+        errorLogger.error(`Erro ao deletar usuário: ${error.message}`);
         return { error: 'Ocorreu um erro ao deletar o usuário.' };
 
     }
 
 };
 
+//Função para editar a senha do usuário, usada no controller para permitir que o admin edite a senha de outros usuários.
 export const editSenha = async (id, novaSenha) => {
 
     try {
@@ -156,13 +171,14 @@ export const editSenha = async (id, novaSenha) => {
 
     } catch (error) {
 
-        console.error('Erro ao editar senha:', error);
+        errorLogger.error(`Erro ao editar senha: ${error.message}`);
         return { error: 'Ocorreu um erro ao editar a senha.' };
         
     }
 
 };
 
+//Função para listar todos os usuários, usada no controller para retornar a lista de usuários para o admin.
 export const todosUsuarios = async () => {
 
     try {
@@ -175,12 +191,13 @@ export const todosUsuarios = async () => {
 
     } catch (error) {
 
-        console.error('Erro ao listar usuários:', error);
+        errorLogger.error(`Erro ao listar usuários: ${error.message}`);
         return { error: 'Ocorreu um erro ao listar os usuários.' };
 
     }
 };
 
+//Função para verificar se o usuário é admin, usada no middleware de admin para proteger rotas exclusivas para administradores.
 export const isadmin = async (id) => {
 
     try {
@@ -192,7 +209,7 @@ export const isadmin = async (id) => {
 
         return { isAdmin: resultado.data.cargo === 'ADMIN' };
     } catch (error) {
-        console.error('Erro ao verificar se o usuário é admin:', error);
+        errorLogger.error(`Erro ao verificar se o usuário é admin: ${error.message}`);
         return { error: 'Ocorreu um erro ao verificar se o usuário é admin.' };
     }
 };

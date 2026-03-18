@@ -1,5 +1,6 @@
 import {inserirAtivo, buscarAtivoPorCampo, deletarAtivo, editarAtivo, listarAtivos} from '../database/functions/ativosHelpers.js';
 import {ativoExiste} from '../database/validators/ativosValidator.js';
+import {errorLogger} from '../logger/logger.js';
 
 export async function criarAtivo(ativo) {
 
@@ -42,7 +43,7 @@ export async function criarAtivo(ativo) {
 
     } catch (error) {
 
-        console.error('Erro ao criar ativo:', error);
+        errorLogger.error(`Erro ao criar ativo: ${error.message}`);
 
         return { 
             message: 'Erro ao criar ativo.',
@@ -71,7 +72,7 @@ export const listarTodosAtivos = async () => {
 
     } catch (error) {
 
-        console.error('Erro ao listar ativos:', error);
+        errorLogger.error(`Erro ao listar ativos: ${error.message}`);
 
         return {
             message: 'Erro ao listar ativos.', 
@@ -107,14 +108,14 @@ export const buscarAtivo = async (campo, valor) => {
 
     } catch (error) {
 
-        console.error('Erro ao buscar ativo:', error);
+        errorLogger.error(`Erro ao buscar ativo: ${error.message}`);
 
         return { 
             message: 'Erro ao buscar ativo.',
             error: error.message,  
         };
 
-    }e
+    }
 };
 
 export const deletarAtivoPorId = async (id) => {
@@ -153,7 +154,7 @@ export const deletarAtivoPorId = async (id) => {
         };
     } catch (error) {
 
-        console.error('Erro ao deletar ativo:', error);
+        errorLogger.error(`Erro ao deletar ativo: ${error.message}`);
         return { 
             message: 'Erro ao deletar ativo.',
             error: error.message 
@@ -217,7 +218,7 @@ export const editarAtivoPorId = async (id, ativo) => {
 
     } catch (error) {
 
-        console.error('Erro ao editar ativo:', error);
+        errorLogger.error(`Erro ao editar ativo: ${error.message}`);
 
         return {
             message: 'Erro ao editar ativo.',

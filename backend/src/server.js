@@ -2,6 +2,8 @@ import express from 'express';
 import userRoutes from './routes/userRoutes.js';
 import ativosRoutes from './routes/ativosRoutes.js';
 import cors from 'cors';
+import swaggerUI from 'swagger-ui-express';
+import { swaggerDocument } from './swagger.js';
 
 
 const app = express();
@@ -10,8 +12,10 @@ const app = express();
 app.use(
 
   express.json(), // Para interpretar JSON .
-  cors(), //Para permitir requisições de outros domínios.
+  cors() //Para permitir requisições de outros domínios.
 );
+
+app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 //Acessa todas as rotas
 app.use('/', userRoutes, ativosRoutes);

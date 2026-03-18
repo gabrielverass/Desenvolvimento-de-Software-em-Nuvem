@@ -9,15 +9,14 @@ export const criarNovoAtivo = async (req, res) => {
         const resultado = await criarAtivo(ativo);
 
         if (resultado.error) { 
-            return res.status(400).json({ message: resultado.message,});
+            return res.status(400).json({ success: false, error: "Erro ao criar ativo" });
         }
 
-        return res.status(201).json({ resultado });
+        return res.status(201).json({ success: true, message: "Ativo criado com sucesso!" });
 
     } catch (error) {
 
-        console.error('Erro ao criar ativo:', error);
-        res.status(500).json({ error: 'Ocorreu um erro ao criar o ativo.' });
+        res.status(500).json({ success: false, error: 'Ocorreu um erro ao criar o ativo.' });
 
     };
 

@@ -125,9 +125,6 @@ function App() {
   // ============================================
   // FUNÇÕES DE AUTENTICAÇÃO
   // ============================================
-  const toggleAuth = (mode) => {
-    setIsLoginMode(mode === 'login');
-  };
 
   const validarSenhas = (senha, confirmar) => {
     if (senha !== confirmar) {
