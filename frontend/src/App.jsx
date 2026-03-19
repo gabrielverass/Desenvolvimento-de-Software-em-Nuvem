@@ -102,16 +102,38 @@ function App() {
 
   };
 
-    // Recarrega os dados sempre que o token, a aba atual ou a visualização de autenticação mudarem
+    // Recarrega os dados sempre que a aba atual ou a visualização de autenticação mudarem
     useEffect(() => {
 
-      // Dispara a função apenas se não estiver na tela de login
-      if (!isAuthView) {
-        loadEquipments();
-        loadUsers();
+      // Dispara a função apenas se não estiver na tela de login e houver um token.
+      if (!isAuthView && currentSession.token) {
+
+        if(currentTab === TAB_EQUIPAMENTOS) {
+          loadEquipments();
+        };
+
+        if(currentTab === TAB_USUARIOS) {
+          loadUsers();
+        };
+
       }
 
-    }, [currentSession.token, isAuthView, currentTab]);// usa essas variaveis para disparar a função
+    }, [isAuthView, currentTab]);
+
+    // Recarrega os dados sempre que a sessão atual mudar.
+    useEffect(() => {
+      if (currentSession.token) {
+
+        if(currentTab === TAB_EQUIPAMENTOS) {
+          loadEquipments();
+        };
+
+        if(currentTab === TAB_USUARIOS) {
+          loadUsers();
+        };
+
+      }
+    }, [currentSession.token]);
 
 
   // ============================================
@@ -818,12 +840,12 @@ function App() {
             <form onSubmit={handleEditSenha}>
               <div className="campo-grupo">
                 <label className="campo-grupo__label">Nova Senha</label>
-                <input type="password" name="novaSenha" className="campo-grupo__input" required />
+                <input type="password" name="novaSenha" id="reg-senha" className="campo-grupo__input" required onInput={handleConfirmarSenhaInput} />
               </div>
               <div>
               <div className="campo-grupo">
                 <label className="campo-grupo__label">Confirmar Nova Senha</label>
-                <input type="password" name="confirmarNovaSenha" className={`campo-grupo__input ${senhaError ? 'campo-grupo__input--erro' : ''}`} required onInput={handleConfirmarSenhaInput} />
+                <input type="password" name="confirmarNovaSenha" id="reg-confirmar-senha" className={`campo-grupo__input ${senhaError ? 'campo-grupo__input--erro' : ''}`} required onInput={handleConfirmarSenhaInput} />
                 {senhaError && <span className="campo-grupo__erro">As senhas não coincidem</span>}
               </div>
                 <button type="button" className="btn btn--primario" onClick={closeSenhaModal}>Cancelar</button>

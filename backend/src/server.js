@@ -4,9 +4,13 @@ import ativosRoutes from './routes/ativosRoutes.js';
 import cors from 'cors';
 import swaggerUI from 'swagger-ui-express';
 import { swaggerDocument } from './swagger.js';
+import { primeiroAcesso } from './utils/firstStartConfig.js';
 
 
 const app = express();
+
+//Configuração inicial do sistema, para garantir que haja um admin cadastrado.
+await primeiroAcesso();
 
 // Adiciona as depenpendencias.
 app.use(

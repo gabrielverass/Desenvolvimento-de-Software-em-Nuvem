@@ -155,3 +155,25 @@ export const listarUsuarios = async () => {
 
     };
 };
+
+//função para contar quantos usuários com cargo de admin existem no banco de dados, para configuração inicial do sistema.
+export const contarAdmins = async () => {
+
+    const {data, error} = await supabase
+        .from('users')
+        .select('id', { count: 'exact' })
+        .eq('cargo', 'admin');
+    
+    if (error) {
+        return { 
+            message: 'Erro ao contar administradores!',
+            error: error.message 
+        }
+    };
+
+    return { 
+        message: 'Administradores contados com sucesso!',
+        data: data
+    };
+
+}

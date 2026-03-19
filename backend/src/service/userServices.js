@@ -1,7 +1,7 @@
 //Camada de serviços, responsável pela lógica de negócios e comunicação entre controller e a database.
 
 import bcrypt from 'bcryptjs';
-import { inserirUsuario, buscarUsuarioPorCampo, editarUsuario, excluirUsuario, editarSenha, listarUsuarios } from '../database/functions/userHelpers.js';
+import { inserirUsuario, buscarUsuarioPorCampo, editarUsuario, excluirUsuario, editarSenha, listarUsuarios, contarAdmins } from '../database/functions/userHelpers.js';
 import { cpfCadastrado, emailCadastrado } from '../database/validators/userValidators.js';
 import jwt from 'jsonwebtoken';
 
@@ -212,4 +212,47 @@ export const isadmin = async (id) => {
         errorLogger.error(`Erro ao verificar se o usuário é admin: ${error.message}`);
         return { error: 'Ocorreu um erro ao verificar se o usuário é admin.' };
     }
+};
+
+//função usada para contar a quantidade de admins, usada para configuração inicial do sistema, para garantir que sempre haja pelo menos um admin cadastrado.
+export const qtdAdmins = async () => {
+
+    try {
+
+        const resultado = await contarAdmins();
+
+        if (resultado.error) { return { count: null }};
+
+        return { count: resultado.count };
+
+    } catch (error) {
+
+        errorLogger.error(`Erro ao contar administradores: ${error.message}`);
+        return { error: 'Ocorreu um erro ao contar os administradores.' };
+    }
+};
+
+//função usada para criar um admin padrão, usada para configuração inicial do sistema.
+//Como é um acesso provisório, não possui validação de dados, verificação de existência 
+export const criarAdminPadrao = async (admin) => {
+
+    try {
+
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(admin.senha, salt);
+        admin.hash = hash;
+        admin.senha = undefined;
+
+        const resultado = await inserirUsuario(admin);
+
+        if (resultado.error) { return false}
+
+        return true;
+
+    } catch (error) {
+
+        errorLogger.error(`Erro ao criar admin padrão: ${error.message}`);
+        return false;
+    }
+
 };
