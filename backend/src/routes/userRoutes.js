@@ -21,7 +21,7 @@ router.delete('/deletarusuario/:id', authMiddleware, adminMiddleware, deletarUsu
 router.get('/listarusuarios', authMiddleware, adminMiddleware, listarTodosUsuarios);
 
 //rota para editar senha do usuário, apenas para o admin.
-router.put('/editarsenha/:id', authMiddleware, adminMiddleware, alterarSenha);
+router.patch('/editarsenha/:id', authMiddleware, adminMiddleware, alterarSenha);
 
 
 export default router;

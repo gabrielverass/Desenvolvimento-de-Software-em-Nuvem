@@ -6,7 +6,7 @@ export async function criarUsuariosDeTeste() {
 
     //Criação de um usuário e um admin para testes, com email e senha definidos nas variáveis de ambiente.
     const TesteAdmin = {
-        nome: 'Admin Padrão',
+        nome: 'Admin de testes',
         cpf: '00000000000',
         dataNascimento: '2000-01-01',
         email: process.env.TEST_ADMIN_EMAIL,
@@ -15,7 +15,7 @@ export async function criarUsuariosDeTeste() {
     };
 
     const TesteUsuario = {
-        nome: 'Usuário Padrão',
+        nome: 'Usuário de testes',
         cpf: '11111111111',
         dataNascimento: '2000-01-01',
         email: process.env.TEST_USER_EMAIL,

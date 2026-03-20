@@ -218,7 +218,7 @@ function App() {
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/editarsenha/${id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${currentSession.token}`
