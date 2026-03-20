@@ -1,10 +1,8 @@
-import { qtdAdmins, criarAdminPadrao } from "../service/userServices.js";
+import { qtdAdmins, criarUsuarioSemValidacao } from "../service/userServices.js";
 import { errorLogger } from "../logger/logger.js";
 
 //Função para configuração inicial do sistema, usada para verificar se há pelo menos um admin cadastrado, e caso não haja, criar um admin padrão.
 export const primeiroAcesso = async () => {
-
-    console.log('Verificando configuração inicial...');
 
     try {
 
@@ -23,13 +21,19 @@ export const primeiroAcesso = async () => {
                 nome: 'Admin Padrão',
                 cpf: '00000000000',
                 dataNascimento: '2000-01-01',
-                email: process.env.ADMIN_EMAIL || 'admin@admin.com',
-                senha: process.env.ADMIN_PASSWORD || 'admin123',
+                email: process.env.ADMIN_EMAIL,
+                senha: process.env.ADMIN_PASSWORD,
                 cargo: 'ADMIN'
             };
 
+        //Validação para garantir que o email e senha do admin padrão estejam definidos nas variáveis de ambiente.
+        if (!adminPadrao.email || !adminPadrao.senha) {
+            errorLogger.error('Email ou senha do admin padrão não definidos nas variáveis de ambiente.');
+            return { error: 'Email ou senha do admin padrão não definidos.' };
+        }
+
         //Criação do admin padrão.
-        const resultadoCriacao = await criarAdminPadrao(adminPadrao);
+        const resultadoCriacao = await criarUsuarioSemValidacao(adminPadrao);
 
         if (resultadoCriacao.error) {
             errorLogger.error(`Erro ao criar admin padrão: ${resultadoCriacao.error}`);

@@ -1,7 +1,8 @@
-import {inserirAtivo, buscarAtivoPorCampo, deletarAtivo, editarAtivo, listarAtivos} from '../database/functions/ativosHelpers.js';
+import {inserirAtivo, buscarAtivoPorCampo, deletarAtivo, editarAtivo, listarAtivos, limparTabelaAtivos} from '../database/functions/ativosHelpers.js';
 import {ativoExiste} from '../database/validators/ativosValidator.js';
 import {errorLogger} from '../logger/logger.js';
 
+//Função para criar um novo ativo, verificando se o ativo já existe antes de tentar criar.
 export async function criarAtivo(ativo) {
 
     //verifica se o ativo já existe no db.
@@ -53,6 +54,7 @@ export async function criarAtivo(ativo) {
     }
 };
 
+//Função para listar todos os ativos, retornando uma mensagem de erro caso ocorra algum erro durante a consulta ao banco de dados.
 export const listarTodosAtivos = async () => {
 
     try {
@@ -82,6 +84,7 @@ export const listarTodosAtivos = async () => {
     }
 };
 
+//Função para buscar um ativo por um campo específico, retornando uma mensagem de erro caso ocorra algum erro durante a consulta ao banco de dados
 export const buscarAtivo = async (campo, valor) => {
 
     try {
@@ -118,6 +121,7 @@ export const buscarAtivo = async (campo, valor) => {
     }
 };
 
+//Função para deletar um ativo por id
 export const deletarAtivoPorId = async (id) => {
 
     try {
@@ -162,6 +166,8 @@ export const deletarAtivoPorId = async (id) => {
     }
 };
 
+//Função para editar um ativo por id, verificando se o ativo existe antes de tentar editar, 
+// e verificando se o patrimônio foi alterado, caso tenha sido, verifica se o novo patrimônio já existe no banco de dados.
 export const editarAtivoPorId = async (id, ativo) => {
 
     try {
@@ -225,4 +231,32 @@ export const editarAtivoPorId = async (id, ativo) => {
             error: error.message
         };
     };
+};
+
+//Função para limpar a tabela de ativos, usada para garantir que os testes sejam executados em um ambiente limpo.
+export const limparAtivos = async () => {
+
+    try {
+
+        const resultado = await limparTabelaAtivos();
+
+        if (resultado.error) {
+            return {
+                message: 'Erro ao limpar tabela de ativos.',
+                error: resultado.error
+            }
+        }
+        return {
+            message: resultado.message,
+            status: resultado.status
+        };
+    } catch (error) {
+
+        errorLogger.error(`Erro ao limpar tabela de ativos: ${error.message}`);
+
+        return {
+            message: 'Erro ao limpar tabela de ativos.',
+            error: error.message
+         };
+    }
 };

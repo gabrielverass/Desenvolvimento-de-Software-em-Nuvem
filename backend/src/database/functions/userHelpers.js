@@ -177,3 +177,24 @@ export const contarAdmins = async () => {
     };
 
 }
+
+//função usada para limpar a tabela de usuarios do banco de testes.
+export const limparTabelaUsuarios = async () => {
+
+    const {error, status} = await supabase
+        .from('users')
+        .delete()
+        .neq('id', 0);
+
+    if (error) {
+        return { 
+            message: 'Erro ao limpar usuários!',
+            error: error.message 
+        }
+    };
+
+    return { 
+        message: 'Usuários limpos com sucesso!',
+        status: status
+    };
+};

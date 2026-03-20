@@ -107,3 +107,25 @@ export async function deletarAtivo(id) {
         status: status
     };
 }
+
+//função usada para limpar a tabela de ativos do banco de testes.
+export async function limparTabelaAtivos() {
+
+    const {error, status} = await supabase
+        .from('ativos')
+        .delete()
+        .neq('id', 0);
+    
+    if (error) {
+        return {
+            message: 'Erro ao limpar ativos!',
+            error: error.message
+        };
+    };
+
+    return {
+        message: 'Ativos limpos com sucesso',
+        status: status
+    };
+
+}

@@ -1,7 +1,8 @@
 //Camada de serviços, responsável pela lógica de negócios e comunicação entre controller e a database.
 
 import bcrypt from 'bcryptjs';
-import { inserirUsuario, buscarUsuarioPorCampo, editarUsuario, excluirUsuario, editarSenha, listarUsuarios, contarAdmins } from '../database/functions/userHelpers.js';
+import { inserirUsuario, buscarUsuarioPorCampo, editarUsuario, 
+    excluirUsuario, editarSenha, listarUsuarios, contarAdmins, limparTabelaUsuarios } from '../database/functions/userHelpers.js';
 import { cpfCadastrado, emailCadastrado } from '../database/validators/userValidators.js';
 import jwt from 'jsonwebtoken';
 
@@ -232,9 +233,8 @@ export const qtdAdmins = async () => {
     }
 };
 
-//função usada para criar um admin padrão, usada para configuração inicial do sistema.
-//Como é um acesso provisório, não possui validação de dados, verificação de existência 
-export const criarAdminPadrao = async (admin) => {
+//função usada para criar um admin sem validação de dados, usada para configuração inicial do sistema e usuarios de teste
+export const criarUsuarioSemValidacao = async (admin) => {
 
     try {
 
@@ -253,6 +253,24 @@ export const criarAdminPadrao = async (admin) => {
 
         errorLogger.error(`Erro ao criar admin padrão: ${error.message}`);
         return false;
+    }
+
+};
+
+//Função usada para limpar a tabela de usuários do banco de testes.
+export const limparUsuarios = async () => {
+
+    try {
+
+        const resultado = await limparTabelaUsuarios();
+        if (resultado.error) { return { error: resultado.error }};
+        return { message: 'Usuários de teste limpos com sucesso!' };
+
+    } catch (error) {
+
+        errorLogger.error(`Erro ao limpar usuários de teste: ${error.message}`);
+        return { error: 'Ocorreu um erro ao limpar os usuários de teste.' };
+
     }
 
 };
