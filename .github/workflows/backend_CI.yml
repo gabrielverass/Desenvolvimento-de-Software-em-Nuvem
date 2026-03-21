@@ -1,0 +1,27 @@
+name: backend CI
+
+#Executa sempre que houver um push para a branch main.
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  #Constroi a imagem do Docker para o backend.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: |
+          cd backend
+          npm install
+      - name: Build Docker Image
+        run: |
+          cd backend
+          docker build -t backend
+        working-directory: ./backend
+

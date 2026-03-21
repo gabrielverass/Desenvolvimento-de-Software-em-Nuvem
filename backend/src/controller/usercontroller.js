@@ -5,20 +5,12 @@ export const efetuarCadastro = async (req, res) => {
 
         const dadosUsuario = req.body;
 
-        //Efetua uma validação simples da presença de todos os dados necessários.
-        if (!dadosUsuario.nome || !dadosUsuario.cpf || !dadosUsuario.dataNascimento || !dadosUsuario.email || !dadosUsuario.senha) { 
-
-            //Caso algum dado esteja ausente, retorna um status de erro junto da mensagem.
-            return res.status(400).json({error: 'Todos os campos são obrigatórios.' });
-        };
-
-
         //Chama a função de cadastro do service.
         const resultado = await cadastrarUsuario(dadosUsuario);
 
         //Caso a função retorne um erro, envia o status de erro e a mensagem.
         if(resultado.error) {
-            return res.status(400).json({error: 'Ocorreu um erro ao cadastrar o usuário.'});
+            return res.status(400).json({error: resultado.message || 'Ocorreu um erro ao cadastrar o usuário.' });
         }
 
         //caso a operação seja bem sucedida, retorna o status e a mensagem de sucesso.
@@ -26,7 +18,7 @@ export const efetuarCadastro = async (req, res) => {
 
     }
     catch (error) {
-        res.status(500).json({error: 'Ocorreu um erro ao cadastrar o usuário.' });
+        res.status(500).json({error: error || 'Ocorreu um erro ao cadastrar o usuário.' });
     }
     
 };
@@ -40,7 +32,7 @@ export const loginUsuario = async (req, res) => {
         const resultado = await validarUsuario(dadosLogin);
 
         //Caso a função retorne um erro, envia o status de erro e a mensagem.
-        if(resultado.error) {return res.status(400).json({ error: 'Ocorreu um erro ao autenticar o usuário.'})};
+        if(resultado.error) {return res.status(400).json({ error: resultado.message || 'Ocorreu um erro ao autenticar o usuário.' })};
 
         //caso a operação seja bem sucedida, retorna o status, o token e a mensagem de sucesso.
         return res.status(200).json({message: resultado.message, resultado });
@@ -48,7 +40,7 @@ export const loginUsuario = async (req, res) => {
 
     } catch (error) {
 
-        res.status(500).json({error: 'Ocorreu um erro ao autenticar o usuário.' });
+        res.status(500).json({error: error || 'Ocorreu um erro ao autenticar o usuário.' });
     }
 
 };
@@ -63,13 +55,13 @@ export const editarUsuario = async (req, res) => {
 
         const resultado = await editUsuario(id, dadosAtualizados);
 
-        if (resultado.error) { return res.status(400).json({ error: 'Ocorreu um erro ao editar o usuário.' })};
+        if (resultado.error) { return res.status(400).json({ error: resultado.message || 'Ocorreu um erro ao editar o usuário.' })};
 
         return res.status(200).json({message: "Usuário editado com sucesso!" });
 
     } catch (error) {
 
-        res.status(500).json({error: 'Ocorreu um erro ao editar o usuário.' });
+        res.status(500).json({error: error || 'Ocorreu um erro ao editar o usuário.' });
         
     }
 
@@ -82,13 +74,13 @@ export const deletarUsuario = async (req, res) => {
 
         const resultado = await deleteUsuario(id);
 
-        if (resultado.error) { return res.status(400).json({error: 'Ocorreu um erro ao deletar o usuário.' })};
+        if (resultado.error) { return res.status(400).json({error: resultado.message || 'Ocorreu um erro ao deletar o usuário.' })};
 
         return res.status(200).json({message: "Usuário deletado com sucesso!" });
 
     } catch (error) {
 
-        res.status(500).json({error: 'Ocorreu um erro ao deletar o usuário.' });
+        res.status(500).json({error: error || 'Ocorreu um erro ao deletar o usuário.' });
 
     }
 };
@@ -99,13 +91,13 @@ export const listarTodosUsuarios = async (req, res) => {
 
         const resultado = await todosUsuarios();
 
-        if (resultado.error) { return res.status(400).json({ error: 'Ocorreu um erro ao listar os usuários.' })};
+        if (resultado.error) { return res.status(400).json({ error: resultado.message || 'Ocorreu um erro ao listar os usuários.' })};
 
         return res.status(200).json({message: resultado.message, data: resultado.data });
         
     } catch (error) {
 
-        res.status(500).json({error: 'Ocorreu um erro ao listar os usuários.' });
+        res.status(500).json({error: error || 'Ocorreu um erro ao listar os usuários.' });
 
     }
 };
@@ -118,12 +110,12 @@ export const alterarSenha = async (req, res) => {
         const novaSenha = req.body.novaSenha;
         const resultado = await editSenha(id, novaSenha);
 
-        if (resultado.error) { return res.status(400).json({error: 'Ocorreu um erro ao alterar a senha.' })};
+        if (resultado.error) { return res.status(400).json({error: resultado.message || 'Ocorreu um erro ao alterar a senha.' })};
 
         return res.status(200).json({message: resultado.message });
 
     } catch (error) {
 
-        res.status(500).json({error: 'Ocorreu um erro ao alterar a senha.' });
+        res.status(500).json({error: error || 'Ocorreu um erro ao alterar a senha.' });
     }
 };

@@ -20,8 +20,12 @@ export const swaggerDocument = {
       ApiError: {
         type: 'object',
         properties: {
-          success: { type: 'boolean' },
-          error: { type: 'string' },
+          message: { type: 'string' },
+          error: { type: 'boolean' },
+        },
+        example: {
+          message: 'Equipamento já cadastrado.',
+          error: true,
         },
       },
       AuthRequest: {
@@ -35,15 +39,10 @@ export const swaggerDocument = {
       AuthResponse: {
         type: 'object',
         properties: {
-          success: { type: 'boolean' },
           message: { type: 'string' },
-          resultado: {
-            type: 'object',
-            properties: {
-              user: { type: 'object' },
-              token: { type: 'string' },
-            },
-          },
+          token: { type: 'string' },
+          user: { type: 'object' },
+          error: { type: 'boolean' },
         },
       },
       UserCreate: {
@@ -61,9 +60,9 @@ export const swaggerDocument = {
       UserListResponse: {
         type: 'object',
         properties: {
-          success: { type: 'boolean' },
           message: { type: 'string' },
           data: { type: 'array', items: { type: 'object' } },
+          error: { type: 'boolean' },
         },
       },
       UserEditPassword: {
@@ -89,17 +88,17 @@ export const swaggerDocument = {
       AssetListResponse: {
         type: 'object',
         properties: {
-          success: { type: 'boolean' },
           message: { type: 'string' },
           data: { type: 'array', items: { type: 'object' } },
+          error: { type: 'boolean' },
         },
       },
       AssetResponse: {
         type: 'object',
         properties: {
-          success: { type: 'boolean' },
           message: { type: 'string' },
           data: { type: 'object' },
+          error: { type: 'boolean' },
         },
       },
     },
@@ -153,13 +152,12 @@ export const swaggerDocument = {
         },
         responses: {
           '201': {
-            description: 'Usuário cadastrado',
+            description: 'Usuário cadastrado com sucesso',
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
                   properties: {
-                    success: { type: 'boolean' },
                     message: { type: 'string' },
                     status: { type: 'number' },
                   },
@@ -168,7 +166,7 @@ export const swaggerDocument = {
             },
           },
           '400': {
-            description: 'Dados inválidos',
+            description: 'Dados inválidos ou usuário já cadastrado',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/ApiError' },

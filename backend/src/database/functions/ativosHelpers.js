@@ -71,8 +71,7 @@ export async function editarAtivo(id, ativo) {
         .from('ativos')
         .update({patrimonio: ativo.patrimonio, tipo : ativo.tipo, nome: ativo.nome, 
             setor: ativo.setor, propriedade: ativo.propriedade, status: ativo.status, valor: ativo.valor})
-        .eq('id', id)
-        .select();
+        .eq('id', id);
 
     if (error) {
         return {

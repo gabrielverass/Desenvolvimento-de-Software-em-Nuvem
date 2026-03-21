@@ -2,38 +2,44 @@ import {inserirAtivo, buscarAtivoPorCampo, deletarAtivo, editarAtivo, listarAtiv
 import {ativoExiste} from '../database/validators/ativosValidator.js';
 import {errorLogger} from '../logger/logger.js';
 
+
 //Função para criar um novo ativo, verificando se o ativo já existe antes de tentar criar.
 export async function criarAtivo(ativo) {
 
-    //verifica se o ativo já existe no db.
-    const ativoExistente = await ativoExiste(ativo.patrimonio);
-
-    //caso ocorra um erro, retorna o erro.
-    if(ativoExistente.error) { 
-        return {
-            message: 'Erro ao verificar existência do ativo.', 
-            error: ativoExistente.error 
-        }
-    };
-
-    //caso exista, retorna uma mensagem de erro e sai da função antes de tentar enviar os dados para o db.
-    if (ativoExistente.exists) { 
-        return { 
-            message: 'Ativo já cadastrado.',
-            error: ativoExistente.error,  
-        };
-    };
-
     try {
+
+        //verifica se o ativo já existe no db.
+        const ativoExistente = await ativoExiste(ativo.patrimonio);
+
+        //caso ocorra um erro, retorna o erro.
+        if(ativoExistente.error) {
+
+            errorLogger.error(`Erro ao verificar existência do ativo: ${ativoExistente.error}`);
+
+            return {
+                message: 'Erro ao verificar existência do ativo.', 
+                error: true 
+            }
+        };
+
+        //caso exista, retorna uma mensagem de erro e sai da função antes de tentar enviar os dados para o db.
+
+        if (ativoExistente.exists) { 
+            return { 
+                message: 'Equipamento já cadastrado.',
+                error: true
+            };
+        };
 
         //Tenta inserir o ativo no banco de dados.
         const resultado = await inserirAtivo(ativo);
 
         //Caso ocorra um erro, retorna o erro.
-        if (resultado.error) { 
+        if (resultado.error) {
+            errorLogger.error(`Erro ao criar ativo: ${resultado.error}`);
             return { 
                 message: 'Erro ao criar ativo.', 
-                error: resultado.error 
+                error: true 
             }
         };
 
@@ -48,7 +54,7 @@ export async function criarAtivo(ativo) {
 
         return { 
             message: 'Erro ao criar ativo.',
-            error: error.message
+            error: true
         };
 
     }
@@ -61,10 +67,12 @@ export const listarTodosAtivos = async () => {
 
         const resultado = await listarAtivos();
 
-        if (resultado.error) { 
+        if (resultado.error) {
+            errorLogger.error(`Erro ao listar ativos: ${resultado.error}`); 
             return {
                 message: 'Erro ao listar ativos.', 
-                error: resultado.error }
+                error: true 
+            }
         };
 
         return { 
@@ -78,7 +86,7 @@ export const listarTodosAtivos = async () => {
 
         return {
             message: 'Erro ao listar ativos.', 
-            error: error.message 
+            error: true 
         };
 
     }
@@ -91,17 +99,18 @@ export const buscarAtivo = async (campo, valor) => {
 
         const resultado = await buscarAtivoPorCampo(campo, valor);
 
-        if (resultado.error) { 
+        if (resultado.error) {
+            errorLogger.error(`Erro ao buscar ativo: ${resultado.error}`);
             return { 
                 message: 'Erro ao buscar ativo.',
-                error: resultado.error 
+                error: true 
             }
         };
 
         if (!resultado.data) { 
             return { 
                 message: 'Ativo não encontrado.',
-                error: resultado.error
+                error: true
             }};
 
         return { 
@@ -115,7 +124,7 @@ export const buscarAtivo = async (campo, valor) => {
 
         return { 
             message: 'Erro ao buscar ativo.',
-            error: error.message,  
+            error: true,  
         };
 
     }
@@ -130,26 +139,28 @@ export const deletarAtivoPorId = async (id) => {
         const ativo = await buscarAtivoPorCampo('id', id);
 
         if (ativo.error) {
+            errorLogger.error(`Erro ao verificar existência do ativo: ${ativo.error}`);
             return {
                 message: 'Erro ao verificar existência do ativo.',
-                error: ativo.error
+                error: true
             }
         };
 
         if (!ativo.data) {
             return {
                 message: 'Ativo não encontrado.',
-                error: ativo.error
+                error: true
             }
         };
 
         //tenta deletar o ativo do banco de dados.
         const resultado = await deletarAtivo(id);
 
-        if (resultado.error) { 
+        if (resultado.error) {
+            errorLogger.error(`Erro ao deletar ativo: ${resultado.error}`);
             return { 
                 message: 'Erro ao deletar ativo.',
-                error: resultado.error 
+                error: true
             }
         };
         return { 
@@ -161,7 +172,7 @@ export const deletarAtivoPorId = async (id) => {
         errorLogger.error(`Erro ao deletar ativo: ${error.message}`);
         return { 
             message: 'Erro ao deletar ativo.',
-            error: error.message 
+            error: true
         };
     }
 };
@@ -176,16 +187,19 @@ export const editarAtivoPorId = async (id, ativo) => {
         const ativoExistente = await buscarAtivoPorCampo('id', id);
 
         if (ativoExistente.error) {
+
+            errorLogger.error(`Erro ao verificar existência do ativo para edição: ${ativoExistente.error}`);
+
             return {
                 message: 'Erro ao verificar existência do ativo.',
-                error: ativoExistente.error
+                error: true
             }
         };
 
         if (!ativoExistente.data) {
             return {
                 message: 'Ativo não encontrado.',
-                error: ativoExistente.error
+                error: true
             }
         }
 
@@ -194,16 +208,19 @@ export const editarAtivoPorId = async (id, ativo) => {
             const patrimonioExistente = await ativoExiste(ativo.patrimonio);
 
             if (patrimonioExistente.error) {
+
+                errorLogger.error(`Erro ao verificar existência do patrimônio para edição: ${patrimonioExistente.error}`);
+
                 return {
                     message: 'Erro ao verificar existência do patrimônio.',
-                    error: patrimonioExistente.error
+                    error: true
                 }
             }
 
             if (patrimonioExistente.exists) {
                 return {
                     message: 'Patrimônio já cadastrado.',
-                    error: patrimonioExistente.error
+                    error: true
                 }
             }
         }
@@ -212,9 +229,12 @@ export const editarAtivoPorId = async (id, ativo) => {
         const resultado = await editarAtivo(id, ativo);
 
         if (resultado.error) {
+
+            errorLogger.error(`Erro ao editar ativo: ${resultado.error}`);
+
             return {
                 message: 'Erro ao editar ativo.',
-                error: resultado.error
+                error: true
             }
         };
         return {
@@ -228,7 +248,7 @@ export const editarAtivoPorId = async (id, ativo) => {
 
         return {
             message: 'Erro ao editar ativo.',
-            error: error.message
+            error: true
         };
     };
 };
@@ -241,22 +261,26 @@ export const limparAtivos = async () => {
         const resultado = await limparTabelaAtivos();
 
         if (resultado.error) {
+
+            errorLogger.error(`Erro ao limpar tabela de ativos: ${resultado.error}`);
+
             return {
                 message: 'Erro ao limpar tabela de ativos.',
-                error: resultado.error
+                error: true
             }
         }
         return {
             message: resultado.message,
             status: resultado.status
         };
+
     } catch (error) {
 
         errorLogger.error(`Erro ao limpar tabela de ativos: ${error.message}`);
 
         return {
             message: 'Erro ao limpar tabela de ativos.',
-            error: error.message
-         };
+            error: true
+        };
     }
 };

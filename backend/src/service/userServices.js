@@ -12,6 +12,15 @@ import {accessLogger, errorLogger} from '../logger/logger.js';
 //Função para cadastrar um usuário, usada no controller para cadastrar um novo usuário.
 export const cadastrarUsuario = async (user) => {
 
+        //Efetua uma validação simples da presença de todos os dados necessários.
+        if (!user.nome || !user.cpf || !user.dataNascimento || !user.email || !user.senha) { 
+            //Caso algum dado esteja ausente, retorna um status de erro junto da mensagem.
+            return {
+                message: 'Todos os campos são obrigatórios.',
+                error: true 
+            };
+        };
+
     try {
 
         //define o salt para a criptografia da senha, o uso do await é importante para garantir que o servidor consiga responder a outras requisições
@@ -24,26 +33,54 @@ export const cadastrarUsuario = async (user) => {
         //verifica se o usuario já existe no db.
         const cpfExistente = await cpfCadastrado(user.cpf);
         const emailExistente = await emailCadastrado(user.email);
-        if(cpfExistente.error) { return { error: "Erro ao verificar existência do CPF." } };
-        if(emailExistente.error) { return { error: "Erro ao verificar existência do email." } };
+
+        if(cpfExistente.error) {
+
+            errorLogger.error(`Erro ao verificar existência do CPF: ${cpfExistente.error}`); 
+
+            return { 
+                message: "Erro ao verificar existência do CPF.", 
+                error: true      
+            } 
+        };
+
+        if(emailExistente.error) { 
+
+            errorLogger.error(`Erro ao verificar existência do email: ${emailExistente.error}`); 
+
+            return { 
+                message: "Erro ao verificar existência do email." ,
+                error: true             
+            } 
+        };
 
         //caso exista, retorna uma mensagem de erro e sai da função antes de tentar enviar os dados para o db.
-        if (cpfExistente.exists || emailExistente.exists) {return { error: 'Usuário já cadastrado.' }};
+        if (cpfExistente.exists || emailExistente.exists) {return { error: true, message: 'Usuário já cadastrado.' }};
 
         //Caso o cargo não seja fornecido, define o cargo como 'usuario' por padrão por questões de segurança.
-        if (!user.cargo) { user.cargo = 'usuario' };
+        if (!user.cargo) { user.cargo = 'USER' };
 
         const resultado = await inserirUsuario(user)
 
         //Caso ocorra um erro, interrompe a função e retorna o erro.
-        if (resultado.error) {return { error: resultado.error }}
+        if (resultado.error) {
+            return { 
+                message: "Erro ao cadastrar usuário." ,
+                error: true                
+            }
+        };
 
         //Em caso de sucesso, retorna a mensagem de sucesso e o status.
         return { message: resultado.message, status: resultado.status };
 
     } catch (error) {
+
         errorLogger.error(`Erro ao cadastrar usuário: ${error.message}`);
-        return { error: 'Ocorreu um erro ao cadastrar o usuário.' };
+
+        return { 
+            message: 'Ocorreu um erro ao cadastrar o usuário.',
+            error: true 
+        };
     };
 
 
@@ -59,11 +96,19 @@ export const validarUsuario = async (user) => {
         //caso ocorra um erro, retorna o erro.
         if (resultado.error) { 
             errorLogger.error(`Erro ao buscar usuário: ${resultado.error}`);
-            return {error: "Erro ao buscar usuário." }
+            return {
+                message: 'Erro ao buscar usuário.',
+                error: true
+            }
         };
 
         //Caso não encontre um usuário, retorna uma mensagem de erro.
-        if (!resultado.data) {return {error: 'Usuário não encontrado.' }};
+        if (!resultado.data) {
+            return {
+                message: 'Usuário não encontrado.',
+                error: true
+            }
+        };
 
         //Caso encontre um usuário, compara a senha fornecida com a senha armazenada no banco de dados.
         const validarSenha = await bcrypt.compare(user.senha, resultado.data.hash);
@@ -71,7 +116,12 @@ export const validarUsuario = async (user) => {
         resultado.data.hash = undefined; // remove o campo de hash para não expor a senha criptografada
 
         //Caso a senha seja inválida, retorna uma mensagem de erro.
-        if (!validarSenha) {return { error: 'Senha incorreta.' }};
+        if (!validarSenha) {
+            return {
+                message: 'Senha incorreta.',
+                error: true
+            }
+        }
 
         //gera o token jwt e retorna para o controller.
         const token = jwt.sign({ id: resultado.data.id, cargo: resultado.data.cargo }, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -85,8 +135,12 @@ export const validarUsuario = async (user) => {
         };
         
     } catch (error) {
+
         errorLogger.error(`Erro ao validar usuário: ${error.message}`);
-        return { error: 'Ocorreu um erro ao validar o usuário.' };
+        return { 
+            message: 'Ocorreu um erro ao validar o usuário.',
+            error: true
+        };
     }
 
 }
@@ -99,29 +153,78 @@ export const editUsuario = async (id, dados) => {
         //Verificar se o usuário existe antes de tentar editar
         const usuarioexiste = await buscarUsuarioPorCampo('id', id);
 
-        if (usuarioexiste.error) { return { error: usuarioexiste.error }}
-        if (!usuarioexiste.data) { return { error: 'Usuário não encontrado.' }};
+        if (usuarioexiste.error) { 
+            errorLogger.error(`Erro ao buscar usuário: ${usuarioexiste.error}`);
+            return { 
+                message: 'Erro ao buscar usuário.',
+                error: true 
+            }
+        };
 
-        //Verificar se o novo email ou cpf já estão cadastrados para outro usuário
-        const emailExistente = await buscarUsuarioPorCampo('email', dados.email);
-        if (emailExistente.error) { return { error: "Erro ao verificar existência do email." } };
-        if (!!emailExistente.exists && emailExistente.exists.id !== id) { return { error: 'Email já cadastrado.' } };
+        if (!usuarioexiste.data) { 
+            return { 
+                message: 'Usuário não encontrado.',
+                error: true 
+            }
+        };
 
+        //Verificar se o novo email ou cpf já estão cadastrados em outro usuário
+        const emailExistente = await emailCadastrado(dados.email);
+
+        if (emailExistente.error) { 
+            errorLogger.error(`Erro ao verificar existência do email: ${emailExistente.error}`);
+            return { 
+                message: "Erro ao verificar existência do email.",
+                error: true
+            }  
+        };
+
+        if (!!emailExistente.exists && emailExistente.exists.id !== id) { 
+            return { 
+                message: 'Email já cadastrado.',
+                error: true
+            } 
+        };
+
+        //Verificar se o novo cpf já está cadastrado em outro usuário
         const cpfExistente = await cpfCadastrado(dados.cpf);
-        if (cpfExistente.error) { return { error: "Erro ao verificar existência do CPF." } };
-        if (!!cpfExistente.exists && cpfExistente.exists.id !== id) { return { error: 'CPF já cadastrado.' } };
 
+        if (cpfExistente.error) { 
+            errorLogger.error(`Erro ao verificar existência do CPF: ${cpfExistente.error}`);
+            return { 
+                message: "Erro ao verificar existência do CPF.",
+                error: true
+            } 
+        };
+
+        if (!!cpfExistente.exists && cpfExistente.exists.id !== id) { 
+            return { 
+                message: 'CPF já cadastrado.', 
+                error: true 
+            } 
+        };
 
         const resultado = await editarUsuario(id, dados);
 
-        if (resultado.error) { return { error: resultado.error }};
+        if (resultado.error) { 
+            errorLogger.error(`Erro ao editar usuário: ${resultado.error}`);
+            return { 
+                message: 'Ocorreu um erro ao editar o usuário.',
+                error: true 
+            }
+        };
 
-        return { message: 'Usuário editado com sucesso!' };
+        return { 
+            message: 'Usuário editado com sucesso!',
+            status: resultado.status
+        };
 
     } catch (error) {
         errorLogger.error(`Erro ao editar usuário: ${error.message}`);
-        return { error: 'Ocorreu um erro ao editar o usuário.' };
-
+        return { 
+            message: 'Ocorreu um erro ao editar o usuário.',
+            error: true
+        };
     }
 
 };
@@ -134,20 +237,44 @@ export const deleteUsuario = async (id) => {
         //Verificar se o usuário existe antes de tentar deletar
         const usuarioexiste = await buscarUsuarioPorCampo('id', id);
 
-        if (usuarioexiste.error) { return { error: usuarioexiste.error }}
+        if (usuarioexiste.error) { 
+            errorLogger.error(`Erro ao buscar usuário: ${usuarioexiste.error}`);
+            return { 
+                message: 'Erro ao buscar usuário.',
+                error: true
+            }
+        }
 
-        if (!usuarioexiste.data) { return { error: 'Usuário não encontrado.' }};
+        if (!usuarioexiste.data) { 
+            return { 
+                message: 'Usuário não encontrado.',
+                error: true
+            }
+        };
 
         const resultado = await excluirUsuario(id);
 
-        if (resultado.error) { return { error: resultado.error }};
+        if (resultado.error) { 
+            errorLogger.error(`Erro ao deletar usuário: ${resultado.error}`);
+            return { 
+                message: 'Ocorreu um erro ao deletar o usuário.',
+                error: true 
+            }
+        };
 
-        return { message: 'Usuário deletado com sucesso!' };
+        return { 
+            message: 'Usuário deletado com sucesso!',
+            status: resultado.status
+         };
 
     } catch (error) {
 
         errorLogger.error(`Erro ao deletar usuário: ${error.message}`);
-        return { error: 'Ocorreu um erro ao deletar o usuário.' };
+
+        return { 
+            message: 'Ocorreu um erro ao deletar o usuário.',
+            error: true
+        };
 
     }
 
@@ -166,14 +293,27 @@ export const editSenha = async (id, novaSenha) => {
         
         const resultado = await editarSenha(id, senhaCriptografada);
 
-        if (resultado.error) { return { error: resultado.error }};
+        if (resultado.error) { 
+            errorLogger.error(`Erro ao editar senha: ${resultado.error}`);
+            return { 
+                message: 'Ocorreu um erro ao editar a senha.',
+                error: true 
+            }
+        };
 
-        return { message: 'Senha editada com sucesso!' };
+        return { 
+            message: 'Senha editada com sucesso!',
+            status: resultado.status 
+        };
 
     } catch (error) {
 
         errorLogger.error(`Erro ao editar senha: ${error.message}`);
-        return { error: 'Ocorreu um erro ao editar a senha.' };
+
+        return { 
+            message: 'Ocorreu um erro ao editar a senha.',
+            error: true
+        };
         
     }
 
@@ -186,15 +326,26 @@ export const todosUsuarios = async () => {
 
         const resultado = await listarUsuarios();
 
-        if (resultado.error) { return { error: resultado.error }};
+        if (resultado.error) {
+             return { 
+                message: 'Ocorreu um erro ao listar os usuários.',
+                error: true 
+            }
+        };
 
-        return { message: 'Usuários listados com sucesso!', data: resultado.data };
+        return { 
+            message: 'Usuários listados com sucesso!', 
+            data: resultado.data
+         };
 
     } catch (error) {
 
         errorLogger.error(`Erro ao listar usuários: ${error.message}`);
-        return { error: 'Ocorreu um erro ao listar os usuários.' };
 
+        return { 
+            message: 'Ocorreu um erro ao listar os usuários.',
+            error: true 
+        };
     }
 };
 
@@ -229,6 +380,7 @@ export const qtdAdmins = async () => {
     } catch (error) {
 
         errorLogger.error(`Erro ao contar administradores: ${error.message}`);
+
         return { error: 'Ocorreu um erro ao contar os administradores.' };
     }
 };
@@ -245,7 +397,10 @@ export const criarUsuarioSemValidacao = async (admin) => {
 
         const resultado = await inserirUsuario(admin);
 
-        if (resultado.error) { return false}
+        if (resultado.error) {
+            errorLogger.error(`Erro ao criar admin padrão: ${resultado.error}`); 
+            return false
+        }
 
         return true;
 
@@ -263,7 +418,13 @@ export const limparUsuarios = async () => {
     try {
 
         const resultado = await limparTabelaUsuarios();
-        if (resultado.error) { return { error: resultado.error }};
+        if (resultado.error) { 
+            errorLogger.error(`Erro ao limpar usuários de teste: ${resultado.error}`);
+            return { 
+                error: resultado.error 
+            }
+        };
+
         return { message: 'Usuários de teste limpos com sucesso!' };
 
     } catch (error) {
