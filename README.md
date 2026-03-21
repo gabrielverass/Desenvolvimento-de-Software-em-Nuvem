@@ -153,19 +153,19 @@ ADMIN_EMAIL = email para o seu admin padrão
 ADMIN_PASSWORD =  senha do admin padrão
 
 #Configurações de Usuário de teste(criado apenas quando o ambiente é configugrado para testes)
-TEST_USER_EMAIL = email do seu usuário padrão
-TEST_USER_PASSWORD = senha do seu usuário padrão
+TEST_USER_EMAIL = email do seu usuário de testes
+TEST_USER_PASSWORD = senha do seu usuário de testes
 
 #Configuração de Admin de teste (criado apenas quando o ambiente é configugrado para testes)
-TEST_ADMIN_EMAIL = 
-TEST_ADMIN_PASSWORD = 
+TEST_ADMIN_EMAIL = email do seu admin de testes
+TEST_ADMIN_PASSWORD = senha do seu admin de testes
 
 #Variável de ambiente para alterar o comportamento do sistema em ambiente de teste
 #Valores possíveis: TRUE ou FALSE.
 TEST_ENV = 
 
 #Configurações do servidor
-PORT = 
+PORT = Porta do backend
 ```
 
 ### ▶️ Executando o Projeto
@@ -355,40 +355,7 @@ npm run preview    # Preview do build
 npm run lint       # ESLint
 ```
 
-## 🐛 Troubleshooting
 
-### Erro de Conexão Supabase
-- Verifique `SUPABASE_URL` e `SUPABASE_KEY` no `.env`
-- Confirme que o banco de dados está ativo
-
-### Token JWT Inválido
-- Verifique se o `JWT_SECRET` está configurado corretamente
-- Certifique-se de enviar o token no header `Authorization: Bearer <token>`
-
-### CORS Error
-- Confirme que o frontend está na porta correta
-- Verifique a configuração de CORS no backend
-
-### Port Already in Use
-```bash
-# Windows PowerShell
-Get-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess | Stop-Process -Force
-
-# Linux/Mac
-lsof -ti:3000 | xargs kill -9
-```
-
-## 📞 Suporte & Contribuições
-
-Para issues e contribuições:
-1. Descreva o problema ou feature
-2. Forneça passos para reproduzir
-3. Inclua evidências (screenshots, logs)
-4. Considere submeter um pull request
-
-## 📄 Licença
-
-Este projeto é fornecido como está para fins educacionais e comerciais.
 
 ## 👨‍💻 Desenvolvedor
 
