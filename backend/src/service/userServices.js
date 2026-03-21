@@ -359,7 +359,7 @@ export const isadmin = async (id) => {
 
         if (!resultado.data) { return { error: 'Usuário não encontrado.' }};
 
-        return { isAdmin: resultado.data.cargo === 'ADMIN' };
+        return { isAdmin: resultado.data.cargo === 'ADMIN' ? true : false };
     } catch (error) {
         errorLogger.error(`Erro ao verificar se o usuário é admin: ${error.message}`);
         return { error: 'Ocorreu um erro ao verificar se o usuário é admin.' };
