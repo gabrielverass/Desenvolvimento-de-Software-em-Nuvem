@@ -169,7 +169,7 @@ export const editUsuario = async (id, dados) => {
         };
 
         //Verificar se o novo email ou cpf já estão cadastrados em outro usuário
-        const emailExistente = await emailCadastrado(dados.email);
+        const emailExistente = await buscarUsuarioPorCampo("email", dados.email);
 
         if (emailExistente.error) { 
             errorLogger.error(`Erro ao verificar existência do email: ${emailExistente.error}`);
@@ -187,7 +187,7 @@ export const editUsuario = async (id, dados) => {
         };
 
         //Verificar se o novo cpf já está cadastrado em outro usuário
-        const cpfExistente = await cpfCadastrado(dados.cpf);
+        const cpfExistente = await buscarUsuarioPorCampo("cpf", dados.cpf);
 
         if (cpfExistente.error) { 
             errorLogger.error(`Erro ao verificar existência do CPF: ${cpfExistente.error}`);
