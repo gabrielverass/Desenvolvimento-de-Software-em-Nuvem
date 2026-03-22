@@ -9,6 +9,10 @@ jobs:
   #Constroi a imagem do Docker para o backend.
   build:
     runs-on: ubuntu-latest
+    #define a pasta de backend como padrão
+    defaults:
+      run:
+        working-directory: ./backend
     #Importa váriaveis dos secrets
     env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -29,9 +33,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install dependencies
-        run: |
-          cd backend
-          npm install
+        run: npm install
       
       - name: Start Backend Server
         run: |
@@ -42,6 +44,5 @@ jobs:
         run: npm test
       
       - name: Build Docker Image
-        working-directory: ./backend
         run: docker build -t backend
         
