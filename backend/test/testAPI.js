@@ -38,15 +38,18 @@ newman.run({
         }
     }
 }, function (err, summary) {
+    // Verificar se houve erros na execução dos testes
     if (err) {
         console.error('Erro ao executar testes:', err);
         process.exit(1);
     }
     
-    if (summary.error && summary.error.length > 0) {
-        console.error('Testes falharam!');
+    // 2. Verifica se houve falhas nos testes (Asserções do Postman)
+    const falhas = summary.run.failures;
+    if (falhas && falhas.length > 0) {
+        console.error(`Testes falharam! Total de falhas: ${falhas.length}`);
         process.exit(1);
-    }
+    };
     
     console.log('✓ Todos os testes foram executados com sucesso!');
     process.exit(0);
