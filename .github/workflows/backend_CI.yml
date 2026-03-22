@@ -20,22 +20,27 @@ jobs:
           cd backend
           npm install
       
-      # ---- NOVO: Iniciar o servidor backend ----
       - name: Start Backend Server
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          HOST: ${{ secrets.HOST }}
+          PORT: ${{ secrets.PORT }}
         run: |
           cd backend
           npm start > /dev/null 2>&1 &
           sleep 5
         
-      # ---- NOVO: Rodar testes com Newman ----
       - name: Run API Tests
         env:
-          HOST: localhost
-          PORT: 3000
-          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
           TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
           TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
         run: |
           cd backend
           npm test
