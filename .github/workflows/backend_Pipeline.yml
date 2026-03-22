@@ -1,4 +1,4 @@
-name: backend CI
+name: BackEnd Pipeline
 
 #Executa sempre que houver um push para a branch main.
 on:
