@@ -1,0 +1,1072 @@
+{
+  "info": {
+    "_postman_id": "63152753-decc-4b0f-98ae-22c5cd38c4a6",
+    "name": "Teste APi de Inventário",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53364741"
+  },
+  "item": [
+    {
+      "name": "1 - LOGIN COMO USUÁRIO",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//Verifica se o status é 200\r",
+              "pm.test(\"Login com Usuário padrão\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "//Verifica se o token jwt foi retornado\r",
+              "pm.test(\"Token JWT retornado\", function () {\r",
+              "    pm.expect(pm.response.json().resultado.token).to.not.be.null;\r",
+              "});\r",
+              "\r",
+              "//Verifica se o usuário foi retornado\r",
+              "pm.test(\"ID do usuário retornado\", function () {\r",
+              "    pm.expect(pm.response.json().resultado.user.id).to.not.be.null;\r",
+              "    });\r",
+              "\r",
+              "//armazena o token jwt\r",
+              "if(pm.response.json().resultado.token){\r",
+              "    pm.environment.set(\"TOKEN_JWT\", pm.response.json().resultado.token);\r",
+              "};\r",
+              "\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"{{USER_EMAIL}}\",\r\n    \"senha\": \"{{USER_PASSWORD}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/login",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2 - CADASTRAR EQUIPAMENTO LOGADO COMO USER",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//Verifica o status de retorno da página\r",
+              "pm.test(\"Cadastro de equipamento retonou status 201\", function () {\r",
+              "    pm.response.to.have.status(201);\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"patrimonio\": \"{{PATRIMONIO}}\",\r\n    \"tipo\": \"Teclado\",\r\n    \"nome\": \"teclado Logitech\",\r\n    \"setor\": \"administração\",\r\n    \"propriedade\": \"locado\",\r\n    \"status\": \"operante\",\r\n    \"valor\": 10.50\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/cadastrarequipamento",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "cadastrarequipamento"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3 - LISTAR EQUIPAMENTOS LOGADO COMO USER",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//verifica se a resposta foi bem sucedida\r",
+              "pm.test(\"O código de status é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "//verifica se a mensagem de resposta é a esperada\r",
+              "pm.test(\"A mensagem de resposta é a esperada\", function () {\r",
+              "    pm.expect(pm.response.json().message).to.eql(\"Ativos listados com sucesso!\");\r",
+              "});\r",
+              "\r",
+              "//verifica se o array de equipamentos não está vazio\r",
+              "pm.test(\"Array de equipamentos não está vazia\", function () {\r",
+              "    pm.expect(pm.response.json().data.length).to.be.above(0);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/listarequipamentos",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "listarequipamentos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4 - BUSCA UM EQUIPAMENTO POR PATRIMONIO LOGADO COMO USER",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//Verifica se o status code é 200\r",
+              "pm.test(\"O código de status é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "//verifica se a mensagem é \"Ativo encontrado com sucesso!\"\r",
+              "pm.test(\"A mensagem é a esperada\", function () {\r",
+              "    pm.expect(pm.response.json().message).to.eql(\"Ativo encontrado com sucesso!\");\r",
+              "});\r",
+              "\r",
+              "//verifica se o patrimônio do equipamento é o mesmo do enviado na requisição\r",
+              "pm.test(\"Patrimônio do equipamento é o mesmo\", function () {\r",
+              "    pm.expect(pm.response.json().data.patrimonio).to.eql(pm.environment.get(\"PATRIMONIO\"));\r",
+              "});\r",
+              "\r",
+              "//armazena o id do equipamento para uso em outros testes\r",
+              "pm.environment.set(\"ID_EQUIPAMENTO\", pm.response.json().data.id);\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/buscarequipamento/{{PATRIMONIO}}",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "buscarequipamento",
+            "{{PATRIMONIO}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5 - EDITAR EQUIPAMENTO LOGADO COMO USER",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//verifica o status do response\r",
+              "pm.test(\"O código de status é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "//verifica se a resposta é o esperado\r",
+              "pm.test(\"Mensagem de sucesso recebida\", function () {\r",
+              "    pm.expect(pm.response.json().message).to.eql(\"Ativo editado com sucesso\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"patrimonio\": \"001\",\r\n  \"tipo\": \"Mouse\",\r\n  \"nome\": \"mouse de teste\",\r\n  \"setor\": \"RH\",\r\n  \"propriedade\": \"Locado\",\r\n  \"status\": \"Operante\",\r\n  \"valor\": 300\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/editarequipamento/{{ID_EQUIPAMENTO}}",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "editarequipamento",
+            "{{ID_EQUIPAMENTO}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6 - DELETAR EQUIPAMENTO LOGADO COMO USER",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//verifica o código do status da resposta\r",
+              "pm.test(\"O código de status é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "//Verifica a mensagem recebida\r",
+              "pm.test(\"A mensagem de resposta é a esperada\", function () {\r",
+              "    pm.expect(pm.response.json().message).to.eql(\"Ativo deletado com sucesso\");\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/deletarequipamento/{{ID_EQUIPAMENTO}}",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "deletarequipamento",
+            "{{ID_EQUIPAMENTO}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "7 - CADASTRAR USUÁRIO LOGADO COMO USER",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//Verifica o status da pagina\r",
+              "pm.test(\"Verifica o status da pagina\", function () {\r",
+              "    pm.response.to.have.status(403);\r",
+              "});\r",
+              "\r",
+              "//Verifica se a resposta é a esperada\r",
+              "pm.test(\"Verifica se a resposta é a esperada\", function () {\r",
+              "    pm.expect(pm.response.json().message).to.eql(\"Acesso negado! Área restrita.\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nome\": \"Teste de cadastro\",\r\n  \"cpf\": \"00000111111\",\r\n  \"dataNascimento\": \"2000-07-11\",\r\n  \"email\": \"user@example.com\",\r\n  \"senha\": \"teste\",\r\n  \"cargo\": \"USER\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/cadastrarusuario",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "cadastrarusuario"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "7 - LOGIN COMO ADMINISTRADOR",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//Verifica se o status é 200\r",
+              "pm.test(\"Login com Usuário padrão\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "//Verifica se o token jwt foi retornado\r",
+              "pm.test(\"Token JWT retornado\", function () {\r",
+              "    pm.expect(pm.response.json().resultado.token).to.not.be.null;\r",
+              "});\r",
+              "\r",
+              "//Verifica se o usuário foi retornado\r",
+              "pm.test(\"ID do usuário retornado\", function () {\r",
+              "    pm.expect(pm.response.json().resultado.user.id).to.not.be.null;\r",
+              "    });\r",
+              "\r",
+              "//armazena o token jwt\r",
+              "if(pm.response.json().resultado.token){\r",
+              "    pm.environment.set(\"TOKEN_JWT\", pm.response.json().resultado.token);\r",
+              "};\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"{{ADMIN_EMAIL}}\",\r\n    \"senha\": \"{{ADMIN_PASSWORD}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/login",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "8 - CADASTRAR EQUIPAMENTO LOGADO COMO ADMIN",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//Verifica o status de retorno da página\r",
+              "pm.test(\"Cadastro de equipamento retonou status 201\", function () {\r",
+              "    pm.response.to.have.status(201);\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"patrimonio\": \"{{PATRIMONIO}}\",\r\n    \"tipo\": \"Teclado\",\r\n    \"nome\": \"teclado Logitech\",\r\n    \"setor\": \"administração\",\r\n    \"propriedade\": \"locado\",\r\n    \"status\": \"operante\",\r\n    \"valor\": 10.50\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/cadastrarequipamento",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "cadastrarequipamento"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "9 - LISTAR EQUIPAMENTOS LOGADO COMO ADMIN",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//verifica se a resposta foi bem sucedida\r",
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "//verifica se a mensagem de resposta é a esperada\r",
+              "pm.test(\"Response message is correct\", function () {\r",
+              "    pm.expect(pm.response.json().message).to.eql(\"Ativos listados com sucesso!\");\r",
+              "});\r",
+              "\r",
+              "//verifica se o array de equipamentos não está vazio\r",
+              "pm.test(\"Array of equipment is not empty\", function () {\r",
+              "    pm.expect(pm.response.json().data.length).to.be.above(0);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/listarequipamentos",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "listarequipamentos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "10 - BUSCA UM EQUIPAMENTO POR PATRIMONIO LOGADO COMO ADMIN",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//Verifica se o status code é 200\r",
+              "pm.test(\"O código de status é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "//verifica se a mensagem é \"Ativo encontrado com sucesso!\"\r",
+              "pm.test(\"A mensagem é a esperada\", function () {\r",
+              "    pm.expect(pm.response.json().message).to.eql(\"Ativo encontrado com sucesso!\");\r",
+              "});\r",
+              "\r",
+              "//verifica se o patrimônio do equipamento é o mesmo do enviado na requisição\r",
+              "pm.test(\"Patrimônio do equipamento é o mesmo\", function () {\r",
+              "    pm.expect(pm.response.json().data.patrimonio).to.eql(pm.environment.get(\"PATRIMONIO\"));\r",
+              "});\r",
+              "\r",
+              "//armazena o id do equipamento para uso em outros testes\r",
+              "pm.environment.set(\"ID_EQUIPAMENTO\", pm.response.json().data.id);\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/buscarequipamento/{{PATRIMONIO}}",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "buscarequipamento",
+            "{{PATRIMONIO}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "11 - EDITAR EQUIPAMENTO LOGADO COMO ADMIN",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//verifica o status do response\r",
+              "pm.test(\"O código de status é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "//verifica se a resposta é o esperado\r",
+              "pm.test(\"Mensagem de sucesso recebida\", function () {\r",
+              "    pm.expect(pm.response.json().message).to.eql(\"Ativo editado com sucesso\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"patrimonio\": \"001\",\r\n  \"tipo\": \"Mouse\",\r\n  \"nome\": \"mouse de teste\",\r\n  \"setor\": \"RH\",\r\n  \"propriedade\": \"Locado\",\r\n  \"status\": \"Operante\",\r\n  \"valor\": 300\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/editarequipamento/{{ID_EQUIPAMENTO}}",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "editarequipamento",
+            "{{ID_EQUIPAMENTO}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "12 - DELETAR EQUIPAMENTO LOGADO COMO ADMIN",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//verifica o código do status da resposta\r",
+              "pm.test(\"O código de status é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "//Verifica a mensagem recebida\r",
+              "pm.test(\"A mensagem de resposta é a esperada\", function () {\r",
+              "    pm.expect(pm.response.json().message).to.eql(\"Ativo deletado com sucesso\");\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/deletarequipamento/{{ID_EQUIPAMENTO}}",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "deletarequipamento",
+            "{{ID_EQUIPAMENTO}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "13 - CADASTRAR USUÁRIO LOGADO COMO ADMIN",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//verifica o status code da resposta\r",
+              "pm.test(\"O código de status é 201\", function () {\r",
+              "    pm.response.to.have.status(201);\r",
+              "});\r",
+              "\r",
+              "//verifica se a mensagem de resposta é a esperada\r",
+              "pm.test(\"A mensagem de resposta é a esperada\", function () {\r",
+              "    pm.expect(pm.response.json().message).to.eql(\"Usuário cadastrado com sucesso!\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nome\": \"Teste de cadastro\",\r\n  \"cpf\": \"00000111111\",\r\n  \"dataNascimento\": \"2000-07-11\",\r\n  \"email\": \"user@example.com\",\r\n  \"senha\": \"teste\",\r\n  \"cargo\": \"USER\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/cadastrarusuario",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "cadastrarusuario"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "14 - LISTAR USUÁRIOS LOGADO COMO ADMIN",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//verifica se a resposta foi bem sucedida\r",
+              "pm.test(\"O código de status é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "//verifica se a mensagem de resposta é a esperada\r",
+              "pm.test(\"A mensagem de resposta é a esperada\", function () {\r",
+              "    pm.expect(pm.response.json().message).to.eql(\"Usuários listados com sucesso!\");\r",
+              "});\r",
+              "\r",
+              "//coleta o id do usuario de testes criado para outros testes\r",
+              "pm.test(\"O id do usuário de testes é coletado\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    var usuarioTestes = jsonData.data.find(user => user.email === \"user@example.com\");\r",
+              "    pm.environment.set(\"ID_USUARIO\", usuarioTestes.id);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"{{USER_EMAIL}}\",\r\n    \"senha\": \"{{USER_PASSWORD}}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/listarusuarios",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "listarusuarios"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "14 - EDITAR USUÁRIO LOGADO COMO ADMIN",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//checa se o codigo de status é 200 (OK)\r",
+              "pm.test(\"O código de status é  200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "//checa se a mensagem retornada é a esperada\r",
+              "pm.test(\"A mensagem retornada é a esperada\", function () {\r",
+              "    pm.expect(pm.response.json().message).to.eql(\"Usuário editado com sucesso!\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nome\": \"Teste de cadastro\",\r\n  \"cpf\": \"00000111111\",\r\n  \"dataNascimento\": \"2000-07-11\",\r\n  \"email\": \"user@example.com\",\r\n  \"cargo\": \"USER\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/editarusuario/{{ID_USUARIO}}",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "editarusuario",
+            "{{ID_USUARIO}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "17 - EDITAR SENHA DE USUÁRIO LOGADO COMO ADMIN",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//verifica se a resposta foi bem sucedida\r",
+              "pm.test(\"Verifica se a resposta foi bem sucedida\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "//verifica se a mensagem é a esperada\r",
+              "pm.test(\"Verifica se a mensagem de resposta é a esperada\", function () {\r",
+              "    pm.expect(pm.response.json().message).to.eql(\"Senha editada com sucesso!\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"novaSenha\": \"{{ADMIN_PASSWORD}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/editarsenha/{{ID_USUARIO}}",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "editarsenha",
+            "{{ID_USUARIO}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "15 - DELETAR USUÁRIO LOGADO COMO ADMIN",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//verifica o status do response\r",
+              "pm.test(\"O código de status é 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "//Verifica a mensagem de resposta\r",
+              "pm.test(\"A mensagem de resposta é a esperada\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.message).to.eql('Usuário deletado com sucesso!');\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{TOKEN_JWT}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"{{USER_EMAIL}}\",\r\n    \"senha\": \"{{USER_PASSWORD}}\"\r\n}"
+        },
+        "url": {
+          "raw": "{{HOST}}:{{PORT}}/deletarusuario/{{ID_USUARIO}}",
+          "host": [
+            "{{HOST}}"
+          ],
+          "port": "{{PORT}}",
+          "path": [
+            "deletarusuario",
+            "{{ID_USUARIO}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

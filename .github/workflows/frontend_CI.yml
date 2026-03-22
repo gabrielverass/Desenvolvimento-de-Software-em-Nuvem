@@ -1,0 +1,26 @@
+name: frontend CI
+
+#Executa sempre que houver um push para a branch main.
+on:
+    push:
+        branches: ["main"]
+
+jobs:
+  #Constroi a imagem do Docker para o frontend.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm install
+      - name: Build Docker Image
+        run: |
+          cd frontend
+          docker build -t frontend
+        working-directory: ./frontend

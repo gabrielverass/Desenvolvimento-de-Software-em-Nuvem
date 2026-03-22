@@ -1,0 +1,47 @@
+name: backend CI
+
+#Executa sempre que houver um push para a branch main.
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  #Constroi a imagem do Docker para o backend.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: |
+          cd backend
+          npm install
+      
+      # ---- NOVO: Iniciar o servidor backend ----
+      - name: Start Backend Server
+        run: |
+          cd backend
+          npm start > /dev/null 2>&1 &
+          sleep 5
+        
+      # ---- NOVO: Rodar testes com Newman ----
+      - name: Run API Tests
+        env:
+          HOST: localhost
+          PORT: 3000
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
+          TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
+        run: |
+          cd backend
+          npm test
+      
+      - name: Build Docker Image
+        run: |
+          cd backend
+          docker build -t backend
+        working-directory: ./backend
