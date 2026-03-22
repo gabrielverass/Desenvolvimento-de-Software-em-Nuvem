@@ -35,6 +35,7 @@ jobs:
         
       - name: Run API Tests
         env:
+          PATRIMONIO_TESTE: ${{ secrets.PATRIMONIO_TESTE }}
           HOST: ${{ secrets.HOST }}
           PORT: ${{ secrets.PORT }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
