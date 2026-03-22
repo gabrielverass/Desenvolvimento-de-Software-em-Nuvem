@@ -13,6 +13,7 @@ jobs:
     defaults:
       run:
         working-directory: ./backend
+        
     #Importa váriaveis dos secrets
     env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -20,7 +21,7 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           HOST: ${{ secrets.HOST }}
           PORT: ${{ secrets.PORT }}
-          TEST_ENV: ${{true}}
+          TEST_ENV: true
           PATRIMONIO_TESTE: ${{ secrets.PATRIMONIO_TESTE }}
           TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
           TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
@@ -32,6 +33,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          
       - name: Instala as Dependencias da API
         run: npm install
       
