@@ -4,6 +4,8 @@ name: backend CI
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'backend/**'
 
 jobs:
   #Constroi a imagem do Docker para o backend.
