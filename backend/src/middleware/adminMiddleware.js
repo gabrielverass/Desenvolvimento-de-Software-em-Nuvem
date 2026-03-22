@@ -8,8 +8,6 @@ export const adminMiddleware = async (req, res, next) => {
 
     // checa se o usuário é admin, utilizando a função isAdmin que retorna true ou false.
     const resultado = await isadmin(userId); 
-
-    
     
     // se o usuário não for admin, retorna acesso negado.
     if (!resultado.isAdmin) {

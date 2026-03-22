@@ -65,6 +65,16 @@ export const swaggerDocument = {
           error: { type: 'boolean' },
         },
       },
+      UserEdit: {
+        type: 'object',
+        properties: {
+          nome: { type: 'string' },
+          cpf: { type: 'string' },
+          dataNascimento: { type: 'string' },
+          email: { type: 'string', format: 'email' },
+          cargo: { type: 'string', description: 'ADMIN ou usuario' },
+        },
+      },
       UserEditPassword: {
         type: 'object',
         required: ['novaSenha'],
@@ -197,8 +207,38 @@ export const swaggerDocument = {
         },
       },
     },
-    '/editarsenha/{id}': {
+    '/editarusuario/{id}': {
       put: {
+        tags: ['Usuários'],
+        summary: 'Edita um usuário (ADMIN)',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'ID do usuário',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UserEdit' },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Usuário editado com sucesso' },
+          '400': { description: 'Dados inválidos' },
+          '401': { description: 'Não autenticado' },
+          '403': { description: 'Sem permissão (não admin)' },
+        },
+      },
+    },
+    '/editarsenha/{id}': {
+      patch: {
         tags: ['Usuários'],
         summary: 'Altera a senha de um usuário (ADMIN)',
         security: [{ bearerAuth: [] }],

@@ -19,9 +19,29 @@ jobs:
         run: |
           cd backend
           npm install
+      
+      # ---- NOVO: Iniciar o servidor backend ----
+      - name: Start Backend Server
+        run: |
+          cd backend
+          npm start > /dev/null 2>&1 &
+          sleep 5
+        
+      # ---- NOVO: Rodar testes com Newman ----
+      - name: Run API Tests
+        env:
+          HOST: localhost
+          PORT: 3000
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
+          TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
+        run: |
+          cd backend
+          npm test
+      
       - name: Build Docker Image
         run: |
           cd backend
           docker build -t backend
         working-directory: ./backend
-
