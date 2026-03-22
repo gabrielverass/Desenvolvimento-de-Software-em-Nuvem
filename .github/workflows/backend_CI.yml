@@ -29,7 +29,9 @@ jobs:
         with:
           node-version: '22'
       - name: Install dependencies
-        run: npm install
+        run: |
+          cd backend
+          npm install
       
       - name: Start Backend Server
         run: |
