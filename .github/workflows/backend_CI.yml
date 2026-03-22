@@ -47,8 +47,4 @@ jobs:
 
       - name: Constroi a imagem do docker
         run: docker build -t backend .
-
-      - name: Efetua o deploy da API no Render
-        if: success()
-        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
         
