@@ -160,11 +160,15 @@ TEST_USER_PASSWORD = senha do seu usuário de testes
 TEST_ADMIN_EMAIL = email do seu admin de testes
 TEST_ADMIN_PASSWORD = senha do seu admin de testes
 
+#Configura o patrimonio de testes(pode ser qualquer valor)
+PATRIMONIO_TESTE = 
+
 #Variável de ambiente para alterar o comportamento do sistema em ambiente de teste
 #Valores possíveis: TRUE ou FALSE.
 TEST_ENV = 
 
 #Configurações do servidor
+HOST = endereço do servidor(Mais relevante para os testes, pode usar localhost)
 PORT = Porta do backend
 ```
 

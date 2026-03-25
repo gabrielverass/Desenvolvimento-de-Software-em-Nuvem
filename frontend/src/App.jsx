@@ -333,7 +333,6 @@ function App() {
 
       } catch (error) {
         mostrarToast('Erro ao atualizar o equipamento', 'erro');
-        alert("disparou no catch " + error.message)
       }
     }
     
