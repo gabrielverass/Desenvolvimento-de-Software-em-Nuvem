@@ -18,7 +18,7 @@ Este projeto implementa uma plataforma completa de gestão de ativos organizacio
 ```
 ┌─────────────────┐         ┌──────────────────┐
 │   Frontend      │         │    Backend       │
-│   React/Vite   │◄───────►│   Express.js     │
+│   React/Vite    │◄───────►│   Express.js     │
 │                 │  HTTP   │  Node.js         │
 └─────────────────┘         └──────────────────┘
                                      │
